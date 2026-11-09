@@ -10,3 +10,15 @@
   speed: 慢
   effect_click: 無
   drag_mood: 微皺眉帶困擾，單手推正眼鏡，努力維持鎮定
+
+- id: yanluoxin
+  name: 言洛昕
+  group: 星座彼氏
+  images: [idle, sleep, click, drag, walk]
+  extras: [cello, warmhands, polish, eat, drink]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: 音符
+  effect_sleep: zzz
+  drag_mood: 委屈苦笑，雙手抓著衣襟
