@@ -15,7 +15,7 @@
   name: 言洛昕
   group: 星座彼氏
   images: [idle, sleep, click, drag, walk]
-  extras: [cello, warmhands, polish, eat, drink]
+  extras: [cello, warmhands, polish, eat, drink, stretch, yawn, heart]
   size: 120
   speed: 慢
   sleep_after: 60
@@ -27,7 +27,7 @@
   name: 麒炘
   group: 玄曙錄
   images: [idle, sleep, click, drag, walk]
-  extras: [fan, spicy, bird, drink, fight]
+  extras: [fan, spicy, bird, drink, fight, stretch, yawn, heart]
   size: 120
   speed: 中
   sleep_after: 60
@@ -39,7 +39,7 @@
   name: 麒沂
   group: 玄曙錄
   images: [idle, sleep, click, drag, walk]
-  extras: [fan, sweets, lantern, chime, fight]
+  extras: [fan, sweets, lantern, chime, fight, stretch, yawn, heart]
   size: 120
   speed: 慢
   sleep_after: 60
@@ -51,7 +51,7 @@
   name: 尉持澈
   group: 單人角
   images: [idle, sleep, click, drag, walk]
-  extras: [punch, wrap, coffee, pushup, phone]
+  extras: [punch, wrap, coffee, pushup, phone, stretch, yawn, heart]
   size: 120
   speed: 快
   sleep_after: 60
@@ -63,7 +63,7 @@
   name: 裴思垣
   group: 那日花未落
   images: [idle, sleep, click, drag, walk]
-  extras: [sketch, plant, cook, ring, milk]
+  extras: [sketch, plant, cook, ring, milk, stretch, yawn, heart]
   size: 120
   speed: 中
   sleep_after: 60
