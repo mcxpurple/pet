@@ -58,3 +58,15 @@
   effect_click: 驚嘆號
   effect_sleep: zzz
   drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
+
+- id: peisiyuan
+  name: 裴思垣
+  group: 那日花未落
+  images: [idle, sleep, click, drag, walk]
+  extras: [sketch, plant, cook, ring, milk]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: 驚嘆號
+  effect_sleep: zzz
+  drag_mood: 無奈嘆氣，單手扶額
