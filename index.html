@@ -9,12 +9,10 @@
 <script src="pet-engine.js"></script>
 <script src="pet-picker.js"></script>
 <style>
+  /* 背景依時段切換，與 VH 相同：late 00–06 窗台月亮｜day 06–16 森林鐵軌｜dusk 16–19 海邊傍晚｜night 19–24 棧橋星空
+     --bg-img 由下方 applyBg() 設定；深淺色只決定霧的顏色 */
   :root { --bg-img: url("../rp/bg/night-h.webp"); --bg-fade: rgba(23,19,29,.62); }
-  @media (prefers-color-scheme: light) { :root { --bg-img: url("../rp/bg/day-h.webp"); --bg-fade: rgba(238,235,242,.55); } }
-  @media (max-aspect-ratio: 1/1) {
-    :root { --bg-img: url("../rp/bg/night-v.webp"); }
-    @media (prefers-color-scheme: light) { :root { --bg-img: url("../rp/bg/day-v.webp"); } }
-  }
+  @media (prefers-color-scheme: light) { :root { --bg-fade: rgba(238,235,242,.58); } }
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
   body { background: linear-gradient(var(--bg-fade), var(--bg-fade)), var(--bg-img) center / cover no-repeat, var(--bg);
     user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -32,6 +30,26 @@
 </style>
 </head>
 <body class="vh">
+<script>
+/* 依現在時間換背景，直式螢幕用 -v、橫式用 -h；跨時段或轉向時自動更新 */
+(function () {
+  const SLOTS = [[0, 'late'], [6, 'day'], [16, 'dusk'], [19, 'night']];
+  let key = '';
+  function applyBg() {
+    const h = new Date().getHours();
+    let slot = 'late';
+    for (const [a, n] of SLOTS) if (h >= a) slot = n;
+    const k = slot + '-' + (innerHeight >= innerWidth ? 'v' : 'h');
+    if (k === key) return;
+    key = k;
+    document.documentElement.dataset.bgslot = slot;
+    document.documentElement.style.setProperty('--bg-img', `url("../rp/bg/${k}.webp")`);
+  }
+  applyBg();
+  setInterval(applyBg, 60 * 1000);
+  addEventListener('resize', applyBg);
+})();
+</script>
 <header>
   <h1>Violet Hour 紫夜星光<small>Q版桌寵</small></h1>
   <button id="switch" class="tape" hidden>換角色</button>
