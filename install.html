@@ -2,91 +2,226 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>安裝 Chrome 版桌寵</title>
 <style>
-  :root { --bg:#f6f1f8; --card:#ffffff; --ink:#3b3142; --muted:#7d7086; --accent:#9b6fbf; --line:#e2d6ea; --code:#efe7f5; --warn:#fff6e6; --warnline:#f0d9a8; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#1e1a23; --card:#28212f; --ink:#ece4f2; --muted:#a395ae; --accent:#c49be6; --line:#3d3348; --code:#352c3e; --warn:#3a3020; --warnline:#6b5630; }
+  @font-face { font-family: "Iansui"; src: url("../rp/fonts/Iansui-Regular.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "ChenYuluoyan"; src: url("../rp/fonts/ChenYuluoyan-2.0-Thin.woff2") format("woff2"); font-display: swap; size-adjust: 130%; }
+
+  /* 深色：夜讀 */
+  :root {
+    --bg: #17131d; --page: #1e1925; --line: #3a3046; --text: #e7e0ee; --muted: #9d92ab; --accent: #c3a3e6;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --fd: #7a6230; --fd-line: #a8873f; --fd-tab2: #4a3d22; --fd-tab2-line: #6b5830; --fd-ink: #fbf3df; --fd-ink2: #c9b489;
+    --tape: #7fa3b8; --tape-ink: #10232e; --tape-dash: #f2d58c;
+    --bg-img: url("../rp/bg/night-h.webp"); --bg-fade: rgba(23,19,29,.72);
+    color-scheme: dark;
   }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.75 "Noto Sans TC", system-ui, sans-serif; }
-  main { max-width:720px; margin:0 auto; padding:40px 16px 64px; }
-  h1 { font-size:26px; margin:0 0 6px; }
-  .lead { color:var(--muted); margin:0 0 28px; }
-  h2 { font-size:18px; margin:36px 0 12px; }
-  ol.steps { list-style:none; padding:0; margin:0; counter-reset:s; }
-  ol.steps > li { counter-increment:s; position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px 16px 58px; margin-bottom:12px; }
-  ol.steps > li::before { content:counter(s); position:absolute; left:16px; top:16px; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; font-size:14px; display:grid; place-items:center; line-height:1; }
-  ol.steps b { display:block; margin-bottom:2px; }
-  code { background:var(--code); padding:1px 6px; border-radius:6px; font-size:14px; }
-  .btn { display:inline-block; margin-top:8px; background:var(--accent); color:#fff; text-decoration:none; padding:8px 16px; border-radius:10px; font-weight:600; }
-  .note { background:var(--warn); border:1px solid var(--warnline); border-radius:12px; padding:12px 16px; font-size:15px; }
-  ul { padding-left:1.2em; }
-  li { margin:4px 0; }
-  .muted { color:var(--muted); font-size:14px; }
-  a { color:var(--accent); }
+  /* 淺色：霧紫信紙 */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #eeebf2; --page: #f9f7fb; --line: #ddd5e6; --text: #2e2638; --muted: #7d7189; --accent: #7a4e92;
+      --shadow: 0 10px 28px rgba(60,40,80,.12);
+      --fd: #e6c77e; --fd-line: #ba7517; --fd-tab2: #f2e3be; --fd-tab2-line: #d8b66a; --fd-ink: #412402; --fd-ink2: #854f0b;
+      --tape: #3e5c6e; --tape-ink: #fbf3df; --tape-dash: #e6c77e;
+      --bg-img: url("../rp/bg/day-h.webp"); --bg-fade: rgba(238,235,242,.78);
+      color-scheme: light;
+    }
+  }
+  @media (max-aspect-ratio: 1/1) {
+    :root { --bg-img: url("../rp/bg/night-v.webp"); }
+    @media (prefers-color-scheme: light) { :root { --bg-img: url("../rp/bg/day-v.webp"); } }
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; min-height: 100dvh; color: var(--text);
+    font-family: "Iansui", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    background: linear-gradient(var(--bg-fade), var(--bg-fade)), var(--bg-img) center / cover fixed no-repeat, var(--bg); }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; align-items: center; padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px); }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: .06em; }
+  header h1 small { display: block; font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--muted); margin-top: 1px; }
+
+  main { padding: 24px 16px 56px; }
+  .sheet { width: 100%; max-width: 560px; margin: 0 auto; background: var(--page); border-radius: 22px; padding: 0 18px 22px; box-shadow: var(--shadow); }
+
+  /* 資料夾頁籤 */
+  .fd-head { position: relative; margin: 0 -18px 16px; padding: 18px 18px 4px; }
+  .fd-tabs { display: flex; align-items: flex-end; gap: 4px; padding-right: 110px; }
+  .fd-tabs > * { border: .5px solid var(--fd-tab2-line); border-bottom: 0; border-radius: 10px 10px 0 0; background: var(--fd-tab2); color: var(--fd-ink2);
+    padding: 5px 16px; font-size: 14px; text-decoration: none; }
+  .fd-tabs > .on { position: relative; z-index: 1; margin-bottom: -1px; padding: 7px 18px; background: var(--fd); border-color: var(--fd-line);
+    color: var(--fd-ink); font-weight: 700; border-radius: 12px 10px 0 0; }
+  .fd-body { background: var(--fd); border: .5px solid var(--fd-line); border-radius: 0 14px 14px 14px; padding: 14px 16px; color: var(--fd-ink);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .fd-body h2 { margin: 0 0 2px; font-size: 19px; font-weight: 600; letter-spacing: .04em; }
+  .fd-body p { margin: 0; color: var(--fd-ink2); font-size: 12.5px; line-height: 1.7; }
+  .fd-tape { position: absolute; top: 14px; right: 20px; transform: rotate(4deg); padding: 7px 14px; font-size: 13px; font-weight: 700; text-decoration: none;
+    color: var(--tape-ink); background-color: var(--tape); letter-spacing: .04em;
+    background-image: repeating-linear-gradient(90deg, var(--tape-dash) 0 4px, transparent 4px 7px), repeating-linear-gradient(90deg, var(--tape-dash) 0 4px, transparent 4px 7px);
+    background-size: 100% 1.5px, 100% 1.5px; background-position: 0 3px, 0 calc(100% - 3px); background-repeat: no-repeat;
+    clip-path: polygon(3% 0, 97% 4%, 100% 50%, 97% 100%, 2% 96%, 0 50%); }
+  .fd-tape:active { transform: rotate(4deg) scale(.95); }
+
+  /* 印章下載鈕 */
+  .stampbtn { display: flex; flex-direction: column; align-items: center; gap: 7px; flex-shrink: 0; text-decoration: none; }
+  .stampbtn .face { position: relative; width: 64px; height: 64px; border-radius: 50%; border: 2.5px solid #7a2f35; color: #7a2f35;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; transform: rotate(-8deg);
+    box-shadow: 0 3px 0 rgba(0,0,0,.3); transition: transform .1s, box-shadow .1s;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.35) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(60,50,40,.07) 0 1px, transparent 1px 3px), #f1e4c8; }
+  .stampbtn .face::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; border: 1px dashed #7a2f35; }
+  .stampbtn .face small { font-family: ui-monospace, "Courier New", monospace; font-size: 7px; letter-spacing: .1em; }
+  .stampbtn .face b { font-size: 15px; font-weight: 700; }
+  .stampbtn .tap { font-size: 11px; font-weight: 700; color: #fbf3df; background: #7a2f35; border-radius: 999px; padding: 1px 9px; }
+  .stampbtn:active .face { transform: rotate(-8deg) translateY(3px); box-shadow: none; }
+
+  /* 舊書頁卡片 */
+  .scard { position: relative; margin: 0 2px 18px; padding: 7px; border-radius: 4px; color: #2f2722; box-shadow: 0 3px 0 rgba(0,0,0,.35);
+    background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(120,80,30,.16) 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.35) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(60,50,40,.07) 0 1px, transparent 1px 3px), #f1e4c8; }
+  .scard:nth-of-type(1) { transform: rotate(-.4deg); }
+  .scard:nth-of-type(2) { transform: rotate(.3deg); }
+  .scard:nth-of-type(3) { transform: rotate(-.25deg); }
+  .scard:nth-of-type(4) { transform: rotate(.2deg); }
+  .scard > .in { border: 1px solid #b08a3e; outline: 1px solid #b08a3e; outline-offset: 2px; padding: 10px 14px 14px; }
+  .hd { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(176,138,62,.6); padding-bottom: 8px; margin-bottom: 4px; }
+  .hd b { display: block; font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .hd small { font-family: ui-monospace, "Courier New", monospace; font-size: 8.5px; letter-spacing: .2em; color: #7a5e2a; }
+  .wax { --s: 32px; width: var(--s); height: var(--s); flex-shrink: 0; border-radius: 47% 53% 50% 48% / 52% 46% 54% 48%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), transparent 45%), var(--c);
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,.32), inset 2px 2px 2px rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.45);
+    display: inline-flex; align-items: center; justify-content: center; }
+  .wax.s2 { border-radius: 52% 48% 46% 54% / 48% 54% 46% 52%; }
+  .wax.s3 { border-radius: 49% 51% 53% 47% / 50% 48% 52% 50%; }
+  .wax.s4 { border-radius: 46% 54% 49% 51% / 53% 47% 51% 49%; }
+  .wax > i { font-style: normal; width: 72%; height: 72%; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1;
+    font-size: calc(var(--s) * .42); box-shadow: inset 1px 1px 2px rgba(0,0,0,.4), inset -1px -1px 1px rgba(255,255,255,.25); }
+
+  /* 編號步驟 */
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: sf; }
+  ol.steps > li { counter-increment: sf; padding: 11px 0 10px; border-bottom: 1px dotted rgba(176,138,62,.55); font-size: 14.5px; line-height: 1.85; }
+  ol.steps > li:last-child { border-bottom: 0; padding-bottom: 0; }
+  ol.steps > li > b { display: block; color: #6e5236; font-size: 13px; margin-bottom: 2px; }
+  ol.steps > li > b::before { content: counter(sf, decimal-leading-zero); font-family: ui-monospace, "Courier New", monospace; font-size: 10px; color: #b08a3e; margin-right: 8px; }
+  .scard ul { margin: 8px 0 0; padding-left: 1.15em; }
+  .scard li { font-size: 14.5px; line-height: 1.85; margin-top: 4px; }
+  .scard dl { margin: 6px 0 0; }
+  .scard dt { font-weight: 700; color: #7a2f35; font-size: 14px; margin-top: 12px; }
+  .scard dd { margin: 2px 0 0; font-size: 14px; line-height: 1.85; }
+  .scard code { font-family: ui-monospace, "Courier New", monospace; font-size: 12.5px; background: #fffaf0; border: 1px solid #d8c49a; border-radius: 5px; padding: 0 5px; color: #2f2722; white-space: nowrap; }
+  .scard .sub { display: block; font-size: 12.5px; color: #7a5e48; }
+  .scard a { color: #7a2f35; }
+
+  /* 票根按鈕 */
+  .mtk { display: inline-flex; margin-top: 10px; text-decoration: none; transform: rotate(-2deg); filter: drop-shadow(0 3px 0 rgba(16,35,46,.45)); transition: transform .1s; }
+  .mtk:active { transform: rotate(-2deg) translateY(2px); }
+  .mtk .f { padding: 6px 10px; border-radius: 6px 0 0 6px; color: #3a2a18;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.35) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(60,50,40,.07) 0 1px, transparent 1px 3px), #fbf3df; }
+  .mtk .f span { display: block; border: 1px solid #b08a3e; outline: 1px solid #b08a3e; outline-offset: 2px; padding: 2px 12px; text-align: center; }
+  .mtk .f small { display: block; font-family: ui-monospace, "Courier New", monospace; font-size: 7px; letter-spacing: .15em; color: #7a5e2a; }
+  .mtk .f b { font-size: 15px; font-weight: 700; white-space: nowrap; }
+  .mtk .s { min-width: 42px; border-left: 2px dashed #fbf3df; border-radius: 0 6px 6px 0; background: #d9b65a; color: #3a2a18;
+    display: flex; align-items: center; justify-content: center; padding: 0 8px; font-size: 16px; }
+
+  .hand { font-family: "ChenYuluoyan", "Iansui", serif; font-size: 17px; color: #7a2f35; margin: 14px 0 0; }
+  .foot { max-width: 560px; margin: 14px auto 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+  @media (max-width: 420px) {
+    .fd-tabs { padding-right: 96px; }
+    .stampbtn .face { width: 56px; height: 56px; }
+  }
 </style>
 </head>
 <body>
+<header><h1>Violet Hour 紫夜星光<small>Q版桌寵・Chrome 版</small></h1></header>
+
 <main>
-  <h1>安裝 Chrome 版桌寵</h1>
-  <p class="lead">裝好之後，角色會在妳逛的每個網頁下方走來走去。適用電腦版 Chrome 與 Edge，大約 3 分鐘完成。</p>
+  <div class="sheet">
+    <div class="fd-head">
+      <div class="fd-tabs"><span class="on">🧩 安裝</span></div>
+      <a class="fd-tape" href="./">← 回桌寵</a>
+      <div class="fd-body">
+        <div>
+          <h2>安裝 Chrome 版桌寵</h2>
+          <p>裝好之後，角色會在妳逛的每個網頁下方走來走去。<br>適用電腦版 Chrome 與 Edge，大約三分鐘。</p>
+        </div>
+        <a class="stampbtn" href="pet-extension.zip" download aria-label="下載擴充功能">
+          <span class="face"><small>✦ ZIP ✦</small><b>下載</b></span><span class="tap">☝ 點我下載</span>
+        </a>
+      </div>
+    </div>
 
-  <h2>安裝步驟</h2>
-  <ol class="steps">
-    <li><b>下載擴充功能</b>
-      下載後解壓縮，會得到一個 <code>pet-extension</code> 資料夾。<br>
-      <a class="btn" href="pet-extension.zip" download>下載 pet-extension.zip</a>
-    </li>
-    <li><b>把資料夾放到固定位置</b>
-      例如「文件」裡。Chrome 每次啟動都會從這個資料夾讀取，安裝後請保留它，不要刪除或移動。
-    </li>
-    <li><b>打開擴充功能管理頁</b>
-      在 Chrome 網址列輸入 <code>chrome://extensions</code> 後按 Enter。<br>
-      <span class="muted">Edge 請輸入 <code>edge://extensions</code>。</span>
-    </li>
-    <li><b>開啟「開發人員模式」</b>
-      在頁面右上角，把開關打開。<br>
-      <span class="muted">Edge 的開關在左側選單下方。</span>
-    </li>
-    <li><b>點「載入未封裝項目」</b>
-      選擇第 1 步解壓縮出來的 <code>pet-extension</code> 資料夾。資料夾裡要直接看得到 <code>manifest.json</code>，選錯層會無法載入。
-    </li>
-    <li><b>把圖示釘在工具列</b>
-      點網址列右邊的拼圖圖示，找到「Q版桌寵」，按旁邊的圖釘。
-    </li>
-    <li><b>選角色</b>
-      點工具列上的桌寵圖示，最多選兩隻，角色會直接出現在網頁上。<br>
-      <span class="muted">安裝前就已經開著的分頁，需要重新整理一次才會出現。</span>
-    </li>
-  </ol>
+    <section class="scard"><div class="in">
+      <div class="hd"><span class="wax s1" style="--c:#7a5e88"><i>🧩</i></span><span><b>安裝步驟</b><small>✦ INSTALL ✦</small></span></div>
+      <ol class="steps">
+        <li><b>下載擴充功能</b>
+          下載後解壓縮，會得到一個 <code>pet-extension</code> 資料夾。<br>
+          <a class="mtk" href="pet-extension.zip" download><span class="f"><span><small>✦ DOWNLOAD ✦</small><b>pet-extension.zip</b></span></span><span class="s">↓</span></a>
+        </li>
+        <li><b>把資料夾放到固定位置</b>
+          例如「文件」裡。Chrome 每次啟動都會從這個資料夾讀取，安裝後請保留它，不要刪除或移動。
+        </li>
+        <li><b>打開擴充功能管理頁</b>
+          在網址列輸入 <code>chrome://extensions</code> 後按 Enter。
+          <span class="sub">Edge 請輸入 <code>edge://extensions</code>。</span>
+        </li>
+        <li><b>開啟「開發人員模式」</b>
+          在頁面右上角，把開關打開。
+          <span class="sub">Edge 的開關在左側選單下方。</span>
+        </li>
+        <li><b>點「載入未封裝項目」</b>
+          選擇第一步解壓縮出來的 <code>pet-extension</code> 資料夾。資料夾裡要直接看得到 <code>manifest.json</code>，選錯層會無法載入。
+        </li>
+        <li><b>把圖示釘在工具列</b>
+          點網址列右邊的拼圖圖示，找到「Q版桌寵」，按旁邊的圖釘。
+        </li>
+        <li><b>選角色</b>
+          點工具列上的桌寵圖示，最多選兩隻，角色會直接出現在網頁上。
+          <span class="sub">安裝前就已經開著的分頁，需要重新整理一次才會出現。</span>
+        </li>
+      </ol>
+    </div></section>
 
-  <h2>怎麼玩</h2>
-  <ul>
-    <li>點一下角色：會有反應</li>
-    <li>按住拖曳：把角色提起來，放開會掉回地面</li>
-    <li>放著不管：一段時間後會睡著，點一下就會醒</li>
-    <li>選兩隻時：走到彼此身邊會停下來打招呼；拖起其中一隻，另一隻會轉頭看</li>
-    <li>暫時不想看到：點圖示，取消勾選「顯示」</li>
-  </ul>
+    <section class="scard"><div class="in">
+      <div class="hd"><span class="wax s2" style="--c:#8a5a4a"><i>🐾</i></span><span><b>怎麼玩</b><small>✦ HOW TO PLAY ✦</small></span></div>
+      <ul>
+        <li>點一下角色：會有反應</li>
+        <li>按住拖曳：把角色提起來，放開會掉回地面</li>
+        <li>放著不管：一段時間後會睡著，點一下就會醒</li>
+        <li>選兩隻時：走到彼此身邊會停下來打招呼；拖起其中一隻，另一隻會轉頭看</li>
+        <li>暫時不想看到：點圖示，取消勾選「顯示」</li>
+      </ul>
+    </div></section>
 
-  <h2>常見問題</h2>
-  <ul>
-    <li><b>安裝時提示「讀取及變更所有網站資料」？</b><br>這是為了讓角色顯示在每個網頁上。擴充功能只會向本站讀取角色圖片，不會收集或傳送任何網頁內容。</li>
-    <li><b>有些網頁看不到角色？</b><br>Chrome 的設定頁、擴充功能商店和新分頁空白頁，瀏覽器規定擴充功能不能出現。影片全螢幕時角色也會暫時隱藏。</li>
-    <li><b>Chrome 跳出「停用開發人員模式擴充功能」之類的提醒？</b><br>因為這個擴充功能沒有上架商店，Chrome 偶爾會提醒。選擇保留或直接關掉提醒即可。</li>
-    <li><b>手機可以用嗎？</b><br>手機版 Chrome 不支援擴充功能，請改用 <a href="./">網頁版</a>。</li>
-  </ul>
+    <section class="scard"><div class="in">
+      <div class="hd"><span class="wax s3" style="--c:#4a6a7a"><i>❓</i></span><span><b>常見問題</b><small>✦ Q &amp; A ✦</small></span></div>
+      <dl>
+        <dt>安裝時提示「讀取及變更所有網站資料」？</dt>
+        <dd>這是為了讓角色顯示在每個網頁上。擴充功能只會向本站讀取角色圖片，不會收集或傳送任何網頁內容。</dd>
+        <dt>有些網頁看不到角色？</dt>
+        <dd>Chrome 的設定頁、擴充功能商店和新分頁空白頁，瀏覽器規定擴充功能不能出現。影片全螢幕時角色也會暫時隱藏。</dd>
+        <dt>Chrome 跳出停用開發人員模式擴充功能的提醒？</dt>
+        <dd>因為這個擴充功能沒有上架商店，Chrome 偶爾會提醒。選擇保留或直接關掉提醒即可。</dd>
+        <dt>手機可以用嗎？</dt>
+        <dd>手機版 Chrome 不支援擴充功能，請改用<a href="./">網頁版</a>。</dd>
+      </dl>
+    </div></section>
 
-  <h2>更新與移除</h2>
-  <ul>
-    <li><b>新角色</b>：不需要重新安裝。點圖示，按「重新讀取名冊」就會出現。</li>
-    <li><b>擴充功能改版</b>：重新下載 zip，解壓縮後覆蓋原本的資料夾，再到 <code>chrome://extensions</code> 按桌寵卡片上的重新載入箭頭。</li>
-    <li><b>移除</b>：到 <code>chrome://extensions</code>，在桌寵卡片上按「移除」，再刪掉資料夾即可。</li>
-  </ul>
-
-  <div class="note" style="margin-top:32px">本擴充功能未上架 Chrome 線上應用程式商店，請只從本頁下載。</div>
+    <section class="scard"><div class="in">
+      <div class="hd"><span class="wax s4" style="--c:#6a7a4a"><i>🔄</i></span><span><b>更新與移除</b><small>✦ UPDATE ✦</small></span></div>
+      <ul>
+        <li><b>新角色</b>：不需要重新安裝。點圖示，按「重新讀取名冊」就會出現。</li>
+        <li><b>擴充功能改版</b>：重新下載 zip，解壓縮後覆蓋原本的資料夾，再到 <code>chrome://extensions</code> 按桌寵卡片上的重新載入箭頭。</li>
+        <li><b>移除</b>：到 <code>chrome://extensions</code>，在桌寵卡片上按「移除」，再刪掉資料夾即可。</li>
+      </ul>
+      <p class="hand">本擴充功能未上架商店，請只從這一頁下載。</p>
+    </div></section>
+  </div>
+  <p class="foot">© 2026 mcx_purple</p>
 </main>
 </body>
 </html>
