@@ -2,374 +2,118 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Q版桌寵</title>
+<link rel="stylesheet" href="vh-ui.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script src="pet-engine.js"></script>
+<script src="pet-picker.js"></script>
 <style>
-  :root {
-    --bg: #f6f1f8;
-    --bg2: #ece3f1;
-    --ink: #3b3142;
-    --muted: #8a7d93;
-    --accent: #9b6fbf;
-    --card: #ffffffcc;
-    --line: #dccfe6;
+  :root { --bg-img: url("../rp/bg/night-h.webp"); --bg-fade: rgba(23,19,29,.62); }
+  @media (prefers-color-scheme: light) { :root { --bg-img: url("../rp/bg/day-h.webp"); --bg-fade: rgba(238,235,242,.55); } }
+  @media (max-aspect-ratio: 1/1) {
+    :root { --bg-img: url("../rp/bg/night-v.webp"); }
+    @media (prefers-color-scheme: light) { :root { --bg-img: url("../rp/bg/day-v.webp"); } }
   }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#1e1a23; --bg2:#262030; --ink:#ece4f2; --muted:#a395ae; --accent:#c49be6; --card:#2c2535cc; --line:#3d3348; }
-  }
-  * { box-sizing: border-box; }
-  html, body { margin:0; height:100%; overflow:hidden; }
-  body {
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-    color: var(--ink);
-    font-family: "Noto Sans TC", system-ui, sans-serif;
-    user-select: none; -webkit-user-select: none;
-    touch-action: none;
-  }
-  #stage { position:fixed; inset:0; }
-  .pet { position:absolute; left:0; top:0; will-change:transform; cursor:grab; }
-  .pet.dragging { cursor:grabbing; }
-  .pet img { display:block; width:100%; height:100%; pointer-events:none; -webkit-user-drag:none; }
-  .fx { position:absolute; pointer-events:none; animation: floatUp 1.4s ease-out forwards; }
-  .fx.zzz { animation: zzz 2.4s ease-out forwards; font-weight:700; color:var(--accent); font-family: Georgia, serif; }
-  @keyframes floatUp { 0%{opacity:0; transform:translate(-50%,0) scale(.6)} 20%{opacity:1; transform:translate(-50%,-10px) scale(1)} 100%{opacity:0; transform:translate(-50%,-50px) scale(1)} }
-  @keyframes zzz { 0%{opacity:0; transform:translate(0,0) scale(.6)} 25%{opacity:1} 100%{opacity:0; transform:translate(18px,-46px) scale(1.15)} }
-
-  #switch {
-    position:fixed; top:12px; right:12px; z-index:20;
-    border:1px solid var(--line); background:var(--card); color:var(--ink);
-    padding:6px 12px; border-radius:999px; font-size:13px; cursor:pointer; backdrop-filter: blur(6px);
-  }
-  #picker {
-    position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
-    background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(8px); padding:16px;
-  }
-  #picker.hidden { display:none; }
-  .panel { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; width:min(560px,100%); max-height:90vh; overflow:auto; }
-  .panel h1 { font-size:18px; margin:0 0 4px; }
-  .panel p { margin:0 0 14px; color:var(--muted); font-size:13px; }
-  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap:10px; }
-  .choice { border:2px solid var(--line); border-radius:14px; padding:8px; text-align:center; cursor:pointer; background:transparent; color:var(--ink); font:inherit; }
-  .choice img { width:100%; aspect-ratio:3/4; object-fit:contain; }
-  .choice .nm { font-size:14px; font-weight:600; }
-  .choice .gp { font-size:11px; color:var(--muted); }
-  .choice.on { border-color:var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-  .choice .badge { display:inline-block; min-width:18px; font-size:11px; color:#fff; background:var(--accent); border-radius:9px; padding:0 5px; visibility:hidden; }
-  .choice.on .badge { visibility:visible; }
-  #go { margin-top:16px; width:100%; padding:10px; border:0; border-radius:12px; background:var(--accent); color:#fff; font-size:15px; cursor:pointer; }
-  #go:disabled { opacity:.4; cursor:default; }
-  #msg { position:fixed; left:50%; top:45%; transform:translateX(-50%); color:var(--muted); font-size:14px; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { background: linear-gradient(var(--bg-fade), var(--bg-fade)), var(--bg-img) center / cover no-repeat, var(--bg);
+    user-select: none; -webkit-user-select: none; touch-action: none; }
+  header { position: relative; z-index: 20; display: flex; align-items: center; padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(6px); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: .06em; }
+  header h1 small { display: block; font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--muted); margin-top: 1px; }
+  header .tape { top: 50%; right: 16px; transform: translateY(-50%) rotate(4deg); }
+  #stage { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #picker { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 72px 16px 24px;
+    background: color-mix(in srgb, var(--bg) 35%, transparent); }
+  #picker .sheet { width: min(520px, 100%); max-height: 100%; overflow-y: auto; }
+  .install { display: block; text-align: center; margin-top: 14px; font-size: 12.5px; color: var(--accent); }
+  #loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; z-index: 40; }
 </style>
 </head>
-<body>
+<body class="vh">
+<header>
+  <h1>Violet Hour 紫夜星光<small>Q版桌寵</small></h1>
+  <button id="switch" class="tape" hidden>換角色</button>
+</header>
 <div id="stage"></div>
-<button id="switch" hidden>換角色</button>
-<div id="picker" class="hidden">
-  <div class="panel">
-    <h1>選擇桌寵</h1>
-    <p>最多選兩隻，點牠們、拖起來，或放著不管等牠們睡著。</p>
-    <div class="grid" id="grid"></div>
-    <button id="go" disabled>開始</button>
-    <p style="margin:12px 0 0;text-align:center"><a href="install.html" style="color:var(--accent)">想讓角色在每個網頁上走？安裝 Chrome 版</a></p>
+
+<div id="picker" hidden>
+  <div class="sheet">
+    <div class="fd-head">
+      <div class="fd-tabs"><span class="on">選擇角色</span></div>
+      <div class="fd-body">
+        <h2>選擇桌寵</h2>
+        <p>先選作品，再點照片選取，最多兩隻。</p>
+        <div class="vsel"><select id="group" aria-label="作品"></select></div>
+      </div>
+    </div>
+    <section class="scard"><div class="in"><div class="pols" id="grid"></div></div></section>
+    <div class="picked" id="picked"></div>
+    <button class="tk" id="go" type="button">
+      <span class="f"><span class="orn">✦</span><span class="t">開始散步</span><span class="en">let's walk</span><span class="orn">✦</span></span>
+      <span class="s">🐾</span>
+    </button>
+    <a class="install" href="install.html">想讓角色在每個網頁上走？安裝 Chrome 版 ›</a>
   </div>
 </div>
-<div id="msg">載入中…</div>
+<div id="loading">載入中…</div>
 
 <script>
-/* ===== 引擎設定（角色資料一律寫在 roster.yaml） ===== */
-const BASE = 'pets/';
-const DEFAULTS = { size:120, speed:'中', sleep_after:60, effect_click:'愛心', effect_sleep:'zzz', images:['idle'], extras:[] };
-const SPEED = { '慢':28, '中':45, '快':70 };     // px/秒
-const IMAGE_FACES_RIGHT = true;                  // 圖片中角色預設面向右；若走路方向相反改為 false
-const MAX_VARIANTS = 5;                          // 多圖變體最多偵測到 _5
-const ASPECT = 600/450;                          // 圖片畫布比例（高/寬）
-const GRAVITY = 2200;
+(async function () {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem('pet_pick')) || []; } catch { return []; } },
+    set(v) { try { localStorage.setItem('pet_pick', JSON.stringify(v)); } catch {} }
+  };
+  const exists = url => fetch(url, { method: 'HEAD', cache: 'no-cache' }).then(r => r.ok).catch(() => false);
+  const bitmap = url => fetch(url).then(r => r.blob()).then(b => createImageBitmap(b));
 
-const stage = document.getElementById('stage');
-const pets = [];
-let roster = [];
-
-/* ===== 特效（程式繪製） ===== */
-const SVG = {
-  '愛心': '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="#f07aa0" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.6C12 6.1 13.6 5 15.6 5 19 5 21.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z"/></svg>',
-  '音符': '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="#7aa7f0" d="M9 18.5a3 3 0 1 1-2-2.8V5l12-2v12.5a3 3 0 1 1-2-2.8V6.4l-8 1.4z"/></svg>',
-  '驚嘆號': '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="10" y="3" width="4" height="12" rx="2" fill="#f0a23a"/><circle cx="12" cy="19.5" r="2.2" fill="#f0a23a"/></svg>',
-  '閃光': '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="#f5c84a" d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>'
-};
-function spawnFx(kind, x, y) {
-  if (!kind || kind === '無') return;
-  const el = document.createElement('div');
-  if (kind === 'zzz') { el.className = 'fx zzz'; el.textContent = 'z'; el.style.fontSize = (12 + Math.random()*8)+'px'; }
-  else { if (!SVG[kind]) return; el.className = 'fx'; el.innerHTML = SVG[kind]; }
-  el.style.left = x+'px'; el.style.top = y+'px';
-  stage.appendChild(el);
-  setTimeout(() => el.remove(), 2500);
-}
-
-/* ===== 圖片偵測：狀態.png 或 狀態_1.png…_5.png ===== */
-function loadImg(src) {
-  return new Promise(res => { const i = new Image(); i.onload = () => res(src); i.onerror = () => res(null); i.src = src; });
-}
-async function probeState(id, state) {
-  const tries = [state, ...Array.from({length:MAX_VARIANTS}, (_,k) => `${state}_${k+1}`)];
-  const found = await Promise.all(tries.map(n => loadImg(`${BASE}${id}/${n}.png`)));
-  return found.filter(Boolean);
-}
-
-/* ===== 桌寵 ===== */
-class Pet {
-  constructor(cfg, startX) {
-    this.c = cfg;
-    this.h = cfg.size; this.w = cfg.size / ASPECT;
-    this.x = startX; this.y = 0; this.vy = 0;
-    this.dir = Math.random() < .5 ? 1 : -1;
-    this.speed = SPEED[cfg.speed] || SPEED['中'];
-    this.mode = 'walk'; this.modeT = 0; this.modeDur = 4 + Math.random()*4;
-    this.lastTouch = performance.now();
-    this.meetCool = 0; this.fxT = 0; this.t = 0;
-    this.el = document.createElement('div'); this.el.className = 'pet';
-    this.el.style.width = this.w+'px'; this.el.style.height = this.h+'px';
-    this.img = document.createElement('img'); this.el.appendChild(this.img);
-    stage.appendChild(this.el);
-    this.y = this.ground();
-    this.setImg('idle');
-    this.bindInput();
-  }
-  ground() { return innerHeight - this.h - 8; }
-  has(state) { return this.c.sets[state] && this.c.sets[state].length; }
-  setImg(state) {
-    const list = this.has(state) ? this.c.sets[state] : this.c.sets.idle;
-    const pick = list[Math.floor(Math.random()*list.length)];
-    if (this.cur !== pick) { this.img.src = pick; this.cur = pick; }
-    this.imgState = this.has(state) ? state : 'idle';
-  }
-  setMode(m, dur) {
-    this.mode = m; this.modeT = 0; this.modeDur = dur || 0;
-    const map = { walk:'idle', stand:'idle', look:'idle', meet:'idle', fall:'drag' };
-    this.setImg(map[m] || m);
-  }
-  touch() { this.lastTouch = performance.now(); }
-  bindInput() {
-    let down = null;
-    this.el.addEventListener('pointerdown', e => {
-      e.preventDefault(); this.el.setPointerCapture(e.pointerId);
-      down = { x:e.clientX, y:e.clientY, ox:e.clientX - this.x, oy:e.clientY - this.y, moved:false };
-    });
-    this.el.addEventListener('pointermove', e => {
-      if (!down) return;
-      if (!down.moved && Math.hypot(e.clientX-down.x, e.clientY-down.y) > 6) {
-        down.moved = true; this.setMode('drag'); this.el.classList.add('dragging');
-        down.ox = this.w/2; down.oy = this.h*0.12;           // 抓住後領的位置
-      }
-      if (down.moved) { this.x = e.clientX - down.ox; this.y = e.clientY - down.oy; this.touch(); }
-    });
-    const up = () => {
-      if (!down) return;
-      if (down.moved) { this.el.classList.remove('dragging'); this.vy = 0; this.setMode('fall'); }
-      else this.onClick();
-      down = null; this.touch();
-    };
-    this.el.addEventListener('pointerup', up);
-    this.el.addEventListener('pointercancel', up);
-  }
-  onClick() {
-    this.touch();
-    this.setMode('click', 1.2);
-    spawnFx(this.c.effect_click, this.x + this.w/2, this.y + 4);
-  }
-  facing(d) { this.dir = d; }
-  update(dt, other) {
-    this.t += dt; this.modeT += dt; this.meetCool -= dt;
-    const g = this.ground();
-    let bob = 0, tilt = 0, sx = 1, sy = 1;
-
-    switch (this.mode) {
-      case 'walk': {
-        this.x += this.dir * this.speed * dt;
-        if (this.x < 0) { this.x = 0; this.dir = 1; }
-        if (this.x > innerWidth - this.w) { this.x = innerWidth - this.w; this.dir = -1; }
-        bob = -Math.abs(Math.sin(this.t * 9)) * 5;            // 走路彈跳
-        tilt = Math.sin(this.t * 9) * 2;
-        if (this.modeT > this.modeDur) this.idleChoice();
-        break;
-      }
-      case 'stand': {
-        sy = 1 + Math.sin(this.t * 2.2) * 0.012;               // 呼吸
-        if (this.modeT > this.modeDur) this.idleChoice();
-        break;
-      }
-      case 'click': {
-        if (!this.has('click')) bob = -Math.sin(Math.min(this.modeT/0.4,1)*Math.PI) * 18;
-        else bob = -Math.sin(Math.min(this.modeT/0.35,1)*Math.PI) * 8;
-        if (this.modeT > this.modeDur) this.setMode('walk', 3 + Math.random()*4);
-        break;
-      }
-      case 'drag': {
-        tilt = Math.sin(this.t * 6) * (this.has('drag') ? 3 : 8);  // 懸空晃動
-        break;
-      }
-      case 'fall': {
-        this.vy += GRAVITY * dt; this.y += this.vy * dt;
-        if (this.y >= g) { this.y = g; this.vy = 0; this.setMode('stand', 1 + Math.random()); }
-        break;
-      }
-      case 'sleep': {
-        sy = 1 + Math.sin(this.t * 1.4) * 0.015;
-        if (!this.has('sleep')) tilt = 6;
-        this.fxT -= dt;
-        if (this.fxT <= 0 && this.c.effect_sleep !== '無') {
-          this.fxT = 1.1;
-          spawnFx('zzz', this.x + this.w*0.68, this.y + this.h*0.12);
-        }
-        break;
-      }
-      case 'meet': {
-        if (other) this.facing(other.x > this.x ? 1 : -1);
-        if (this.modeT > this.modeDur) { this.meetCool = 12; this.setMode('walk', 3 + Math.random()*3);
-          if (other) this.dir = other.x > this.x ? -1 : 1; }
-        break;
-      }
-      case 'look': {
-        if (other) this.facing(other.x > this.x ? 1 : -1);
-        if (!other || (other.mode !== 'drag' && other.mode !== 'fall')) this.setMode('stand', 1.5);
-        break;
-      }
-      default: {   // 擴充動作
-        if (this.modeT > this.modeDur) this.setMode('walk', 3 + Math.random()*4);
-      }
-    }
-
-    if (this.mode !== 'drag' && this.mode !== 'fall' && this.mode !== 'sleep') this.y = g;
-
-    // 入睡
-    const idleSec = (performance.now() - this.lastTouch) / 1000;
-    if (idleSec > this.c.sleep_after && ['walk','stand'].includes(this.mode)) { this.setMode('sleep'); this.fxT = 0.4; }
-
-    const flip = (this.dir === 1) === IMAGE_FACES_RIGHT ? 1 : -1;
-    this.el.style.transform =
-      `translate(${this.x}px, ${this.y + bob}px) rotate(${tilt}deg) scale(${flip * sx}, ${sy})`;
-    this.el.style.transformOrigin = this.mode === 'drag' ? '50% 12%' : '50% 100%';
-    this.el.style.zIndex = this.mode === 'drag' ? 10 : 1;
-  }
-  idleChoice() {
-    const r = Math.random();
-    const extras = this.c.extras.filter(n => this.has(n));
-    if (extras.length && r < 0.25) {
-      this.setMode(extras[Math.floor(Math.random()*extras.length)], 4 + Math.random()*4);
-    } else if (r < 0.55) {
-      this.setMode('stand', 1.5 + Math.random()*3);
-    } else {
-      if (Math.random() < 0.4) this.dir *= -1;
-      this.setMode('walk', 3 + Math.random()*5);
-    }
-  }
-  wake() { if (this.mode === 'sleep') this.setMode('stand', 1); }
-  destroy() { this.el.remove(); }
-}
-
-/* 點擊睡著的角色時喚醒（click 會一併觸發） */
-const _onClick = Pet.prototype.onClick;
-Pet.prototype.onClick = function () { this.wake(); _onClick.call(this); };
-
-/* ===== 兩隻互動 ===== */
-function interact(a, b) {
-  // 拖曳：另一隻轉頭看
-  for (const [p, q] of [[a,b],[b,a]]) {
-    if ((p.mode === 'drag') && ['walk','stand','meet'].includes(q.mode)) q.setMode('look');
-  }
-  // 相遇
-  const close = Math.abs((a.x + a.w/2) - (b.x + b.w/2)) < (a.w + b.w) * 0.45;
-  if (close && a.mode === 'walk' && b.mode === 'walk' && a.meetCool <= 0 && b.meetCool <= 0) {
-    const dur = 2.5 + Math.random()*1.5;
-    a.setMode('meet', dur); b.setMode('meet', dur);
-    a.touch(); b.touch();
-    const mx = (a.x + a.w/2 + b.x + b.w/2) / 2, my = Math.min(a.y, b.y) + 10;
-    spawnFx('閃光', mx, my);
-    setTimeout(() => spawnFx('閃光', mx + 14, my + 18), 350);
-  }
-}
-
-/* ===== 主迴圈 ===== */
-let last = performance.now();
-function loop(now) {
-  const dt = Math.min((now - last) / 1000, 0.05); last = now;
-  pets.forEach((p, i) => p.update(dt, pets[1 - i]));
-  if (pets.length === 2) interact(pets[0], pets[1]);
-  requestAnimationFrame(loop);
-}
-
-/* ===== 選角介面 ===== */
-const picker = document.getElementById('picker');
-const grid = document.getElementById('grid');
-const go = document.getElementById('go');
-let picked = [];
-
-function store(k, v) { try { v === undefined ? null : localStorage.setItem(k, JSON.stringify(v)); return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
-
-function renderPicker() {
-  grid.innerHTML = '';
-  roster.forEach(c => {
-    const b = document.createElement('button'); b.className = 'choice';
-    b.innerHTML = `<img src="${c.sets.idle[0]}" alt=""><div class="nm">${c.name}</div><div class="gp">${c.group || ''}</div><span class="badge"></span>`;
-    b.onclick = () => {
-      const i = picked.indexOf(c.id);
-      if (i >= 0) picked.splice(i, 1);
-      else { if (picked.length >= 2) picked.shift(); picked.push(c.id); }
-      refresh();
-    };
-    b.dataset.id = c.id; grid.appendChild(b);
-  });
-  refresh();
-}
-function refresh() {
-  [...grid.children].forEach(b => {
-    const i = picked.indexOf(b.dataset.id);
-    b.classList.toggle('on', i >= 0);
-    b.querySelector('.badge').textContent = i >= 0 ? i + 1 : '';
-  });
-  go.disabled = picked.length === 0;
-}
-function start(ids) {
-  pets.splice(0).forEach(p => p.destroy());
-  ids.map(id => roster.find(c => c.id === id)).filter(Boolean).forEach((c, i, arr) => {
-    const slot = innerWidth / (arr.length + 1) * (i + 1);
-    pets.push(new Pet(c, slot - (c.size / ASPECT) / 2));
-  });
-  store('pet_pick', ids);
-  picker.classList.add('hidden');
-  document.getElementById('switch').hidden = false;
-}
-go.onclick = () => start(picked.slice());
-document.getElementById('switch').onclick = () => { picked = pets.map(p => p.c.id); refresh(); picker.classList.remove('hidden'); };
-
-/* ===== 啟動 ===== */
-(async function boot() {
-  const msg = document.getElementById('msg');
+  let roster;
   try {
-    const text = await (await fetch('roster.yaml', { cache:'no-cache' })).text();
-    const raw = jsyaml.load(text) || [];
+    const raw = jsyaml.load(await (await fetch('roster.yaml', { cache: 'no-cache' })).text()) || [];
     roster = (await Promise.all(raw.map(async r => {
-      const c = { ...DEFAULTS, ...r };
-      c.extras = c.extras || [];
-      const states = [...new Set(['idle', 'sleep', 'click', 'drag', ...c.images, ...c.extras])];
-      c.sets = {};
-      await Promise.all(states.map(async s => { c.sets[s] = await probeState(c.id, s); }));
-      return c.sets.idle.length ? c : null;   // 沒有 idle 的角色不顯示
+      const c = QPet.normalize(r); c.sets = {};
+      await Promise.all(c.states.map(async s => {
+        const urls = QPet.variantNames(s).map(n => `pets/${c.id}/${n}.png`);
+        const ok = await Promise.all(urls.map(exists));
+        c.sets[s] = urls.filter((_, i) => ok[i]);
+      }));
+      c.thumb = c.sets.idle[0];
+      return c.sets.idle.length ? c : null;
     }))).filter(Boolean);
-  } catch (e) {
-    msg.textContent = '角色名冊讀取失敗';
-    console.error(e); return;
-  }
-  msg.remove();
-  if (!roster.length) { document.body.insertAdjacentHTML('beforeend','<div id="msg">名冊中沒有可用角色</div>'); return; }
-  renderPicker();
-  const saved = (store('pet_pick') || []).filter(id => roster.some(c => c.id === id));
-  if (saved.length) { picked = saved; start(saved); } else picker.classList.remove('hidden');
-  requestAnimationFrame(t => { last = t; loop(t); });
-})();
+  } catch (e) { $('loading').textContent = '角色名冊讀取失敗'; console.error(e); return; }
+  $('loading').remove();
 
-addEventListener('resize', () => pets.forEach(p => { if (p.x > innerWidth - p.w) p.x = Math.max(0, innerWidth - p.w); }));
+  const world = new QPet.World($('stage'));
+  let current = store.get().filter(id => roster.some(c => c.id === id));
+  let ui;
+
+  function openPicker() {
+    ui = QPet.picker({ select: $('group'), grid: $('grid'), picked: $('picked'), roster, pick: current,
+      onChange: p => { $('go').disabled = !p.length; } });
+    $('go').disabled = !ui.pick.length;
+    $('picker').hidden = false; $('switch').hidden = true;
+  }
+  async function start(ids) {
+    current = ids; store.set(ids);
+    $('picker').hidden = true; $('switch').hidden = false;
+    const chosen = ids.map(id => roster.find(c => c.id === id)).filter(Boolean);
+    const list = await Promise.all(chosen.map(async c => {
+      const bitmaps = {};
+      await Promise.all(Object.entries(c.sets).map(async ([s, urls]) => {
+        bitmaps[s] = (await Promise.all(urls.map(u => bitmap(u).catch(() => null)))).filter(Boolean);
+      }));
+      return { cfg: c, bitmaps };
+    }));
+    world.set(list);
+  }
+  $('go').onclick = () => { if (ui.pick.length) start(ui.pick); };
+  $('switch').onclick = openPicker;
+
+  if (!roster.length) { document.body.insertAdjacentHTML('beforeend', '<div id="loading">名冊中沒有可用角色</div>'); return; }
+  if (current.length) start(current); else openPicker();
+})();
 </script>
 </body>
 </html>
