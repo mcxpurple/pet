@@ -1,8 +1,9 @@
 /* 選角元件｜網頁版與擴充功能共用
-   QPet.picker({ select, grid, picked, roster, pick, onChange }) */
+   QPet.picker({ select, grid, picked, roster, pick, onChange, max }) */
 (function (global) {
   function picker(o) {
-    const st = { pick: (o.pick || []).filter(id => o.roster.some(c => c.id === id)) };
+    const max = o.max || 2;
+    const st = { pick: (o.pick || []).filter(id => o.roster.some(c => c.id === id)).slice(0, max) };
     const groups = [];
     o.roster.forEach(c => { if (!groups.includes(c.group)) groups.push(c.group); });
     const first = st.pick.length ? o.roster.find(c => c.id === st.pick[0]).group : groups[0];
@@ -19,7 +20,7 @@
     function toggle(id) {
       const i = st.pick.indexOf(id);
       if (i >= 0) st.pick.splice(i, 1);
-      else { if (st.pick.length >= 2) st.pick.shift(); st.pick.push(id); }
+      else { if (st.pick.length >= max) st.pick.shift(); st.pick.push(id); }
       renderGrid(); renderPicked();
       o.onChange && o.onChange(st.pick.slice());
     }

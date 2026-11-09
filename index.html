@@ -62,7 +62,7 @@
       <div class="fd-tabs"><span class="on">選擇角色</span></div>
       <div class="fd-body">
         <h2>選擇桌寵</h2>
-        <p>先選作品，再點照片選取，最多兩隻。</p>
+        <p>先選作品，再點照片選取，最多四隻。</p>
         <div class="vsel"><select id="group" aria-label="作品"></select></div>
       </div>
     </div>
@@ -104,7 +104,7 @@
   } catch (e) { $('loading').textContent = '角色名冊讀取失敗'; console.error(e); return; }
   $('loading').remove();
 
-  const world = new QPet.World($('stage'));
+  const world = new QPet.World($('stage'), { max: 4 });
   let size = '中';
   try { size = localStorage.getItem('pet_size') || '中'; } catch {}
   world.setSize(size);
@@ -113,7 +113,7 @@
   let ui;
 
   function openPicker() {
-    ui = QPet.picker({ select: $('group'), grid: $('grid'), picked: $('picked'), roster, pick: current,
+    ui = QPet.picker({ select: $('group'), grid: $('grid'), picked: $('picked'), roster, pick: current, max: 4,
       onChange: p => { $('go').disabled = !p.length; } });
     $('go').disabled = !ui.pick.length;
     $('picker').hidden = false; $('switch').hidden = true;

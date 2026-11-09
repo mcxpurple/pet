@@ -214,8 +214,9 @@
   }
 
   class World {
-    constructor(stage) {
+    constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
+      this.max = opts.max || 2;                         // 同時出現上限：網頁版 4、擴充功能 2
       const root = stage.getRootNode();
       const style = document.createElement('style'); style.textContent = CSS;
       (root === document ? document.head : root).appendChild(style);
@@ -238,7 +239,7 @@
     }
     set(list) {
       this.clear();
-      list.filter(p => p.bitmaps.idle && p.bitmaps.idle.length).slice(0, 2).forEach((p, i, arr) => {
+      list.filter(p => p.bitmaps.idle && p.bitmaps.idle.length).slice(0, this.max).forEach((p, i, arr) => {
         const slot = global.innerWidth / (arr.length + 1) * (i + 1);
         this.pets.push(new Pet(this, p.cfg, p.bitmaps, slot));
       });
@@ -248,18 +249,22 @@
     loop(now) {
       const dt = Math.min((now - this.last) / 1000, .05); this.last = now;
       const ps = this.pets;
-      ps.forEach((p, i) => p.update(dt, ps[1 - i]));
-      if (ps.length === 2) this.interact(ps[0], ps[1]);
+      ps.forEach(p => p.update(dt, p.target));
+      // 拖曳：拖起其中一隻時，其他所有角色轉頭看牠
+      ps.forEach(p => {
+        if (p.mode !== 'drag') return;
+        ps.forEach(q => { if (q !== p && ['walk', 'run', 'stand', 'meet'].includes(q.mode)) { q.target = p; q.setMode('look'); } });
+      });
+      // 相遇：任兩隻走到一起即觸發
+      for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) this.interact(ps[i], ps[j]);
       this.raf = requestAnimationFrame(this.loop);
     }
     interact(a, b) {
-      for (const [p, q] of [[a, b], [b, a]]) {
-        if (p.mode === 'drag' && ['walk', 'run', 'stand', 'meet'].includes(q.mode)) q.setMode('look');
-      }
       const close = Math.abs((a.x + a.w / 2) - (b.x + b.w / 2)) < (a.w + b.w) * .45;
       const walking = p => p.mode === 'walk' || p.mode === 'run';
       if (close && walking(a) && walking(b) && a.meetCool <= 0 && b.meetCool <= 0) {
         const dur = rand(2.5, 4);
+        a.target = b; b.target = a;
         a.setMode('meet', dur); b.setMode('meet', dur); a.touch(); b.touch();
         const mx = (a.x + a.w / 2 + b.x + b.w / 2) / 2, my = Math.min(a.y, b.y) + 10;
         this.fx('閃光', mx, my);
