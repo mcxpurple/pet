@@ -22,3 +22,17 @@
   effect_click: 音符
   effect_sleep: zzz
   drag_mood: 委屈苦笑，雙手抓著衣襟
+
+- id: qixin
+  name: 麒炘
+  group: 玄曙錄
+  images: [idle, sleep, click, drag, walk]
+  extras: [fan, spicy, bird, drink, fight]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: 驚嘆號
+  effect_sleep: zzz
+  drag_mood: 皺眉回頭瞪人，狐耳後壓，狐尾炸毛蓬起
+
+  
