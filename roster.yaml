@@ -60,6 +60,18 @@
   effect_sleep: zzz
   drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
 
+- id: caelum
+  name: Caelum·Santarelli
+  group: 單人角
+  images: [idle, sleep, click, drag, walk]
+  extras: [drink, sit, wine, fencing, sunglasses, heart, yawn, stretch]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: 愛心
+  effect_sleep: zzz
+  drag_mood: 雙手攤開聳肩，挑眉從容微笑
+
 - id: peisiyuan
   name: 裴思垣
   group: 那日花未落
