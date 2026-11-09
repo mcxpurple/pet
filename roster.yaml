@@ -35,4 +35,14 @@
   effect_sleep: zzz
   drag_mood: 皺眉回頭瞪人，狐耳後壓，狐尾炸毛蓬起
 
-  
+  - id: qiyi
+  name: 麒沂
+  group: 玄曙錄
+  images: [idle, sleep, click, drag, walk]
+  extras: [fan, sweets, lantern, chime, fight]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: 愛心
+  effect_sleep: zzz
+  drag_mood: 抱緊狐尾縮成一團，狐耳後壓，輕皺眉
