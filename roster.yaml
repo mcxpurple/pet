@@ -46,3 +46,15 @@
   effect_click: 愛心
   effect_sleep: zzz
   drag_mood: 抱緊狐尾縮成一團，狐耳後壓，輕皺眉
+
+- id: weichiche
+  name: 尉持澈
+  group: 單人角
+  images: [idle, sleep, click, drag, walk]
+  extras: [punch, wrap, coffee, pushup, phone]
+  size: 120
+  speed: 快
+  sleep_after: 60
+  effect_click: 驚嘆號
+  effect_sleep: zzz
+  drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
