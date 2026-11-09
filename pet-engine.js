@@ -1,6 +1,7 @@
-/* Q版桌寵引擎 v0.3｜網頁版與擴充功能共用
+/* Q版桌寵引擎 v0.4｜網頁版與擴充功能共用
    用法：const world = new QPet.World(stageElement);
-         world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] } */
+         world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] }
+         world.setSize('小' | '中' | '大');     // 玩家選擇的角色大小，立即生效 */
 (function (global) {
   const SPEED = { '慢': 28, '中': 45, '快': 70 };          // 走路速度 px/秒
   const FRAME = { '慢': 0.18, '中': 0.15, '快': 0.12 };     // 走路每格秒數
@@ -10,6 +11,8 @@
   const ASPECT = 600 / 450;                                 // 畫布比例（高/寬）
   const GRAVITY = 2200;
   const CORE = ['idle', 'sleep', 'click', 'drag', 'walk'];
+  const SIZE_PCT = { '小': .14, '中': .18, '大': .22 };      // 角色高度佔視窗高度比例
+  const SIZE_MIN = 100, SIZE_MAX = 240, SIZE_BASE = 120;     // 高度上下限；名冊 size 以 120 為 1 倍
 
   const CSS = `
     .qpet{position:absolute;left:0;top:0;pointer-events:auto;cursor:grab;touch-action:none;will-change:transform;}
@@ -33,7 +36,6 @@
   class Pet {
     constructor(world, cfg, bitmaps, startX) {
       this.w0 = world; this.c = cfg; this.b = bitmaps;
-      this.h = cfg.size; this.w = cfg.size / ASPECT;
       this.x = startX; this.y = 0; this.vy = 0; this.v = 0;
       this.dir = Math.random() < .5 ? 1 : -1;
       this.speed = SPEED[cfg.speed] || SPEED['中'];
@@ -41,16 +43,28 @@
       this.t = 0; this.modeT = 0; this.phase = 0; this.meetCool = 0; this.fxT = 0;
       this.lastTouch = performance.now();
       this.el = document.createElement('div'); this.el.className = 'qpet';
-      this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
       this.cv = document.createElement('canvas');
-      const dpr = global.devicePixelRatio || 1;
-      this.cv.width = Math.round(this.w * dpr); this.cv.height = Math.round(this.h * dpr);
       this.ctx = this.cv.getContext('2d');
       this.el.appendChild(this.cv);
       world.stage.appendChild(this.el);
+      this.resize();
+      this.x = startX - this.w / 2;
       this.y = this.ground();
       this.setMode('walk', rand(3, 6));
       this.bindInput();
+    }
+    /* 依視窗高度與玩家選擇的大小重新計算尺寸 */
+    resize() {
+      const cx = this.w ? this.x + this.w / 2 : null;
+      const base = Math.min(SIZE_MAX, Math.max(SIZE_MIN, global.innerHeight * (SIZE_PCT[this.w0.size] || SIZE_PCT['中'])));
+      this.h = Math.round(base * (this.c.size || SIZE_BASE) / SIZE_BASE);
+      this.w = Math.round(this.h / ASPECT);
+      this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
+      const dpr = global.devicePixelRatio || 1;
+      this.cv.width = Math.round(this.w * dpr); this.cv.height = Math.round(this.h * dpr);
+      const bmp = this.cur; this.cur = null; this.draw(bmp);
+      if (cx !== null) this.x = Math.min(Math.max(0, cx - this.w / 2), Math.max(0, global.innerWidth - this.w));
+      if (!['drag', 'fall'].includes(this.mode)) this.y = this.ground();
     }
     ground() { return global.innerHeight - this.h - 4; }
     has(s) { return this.b[s] && this.b[s].length; }
@@ -201,13 +215,17 @@
 
   class World {
     constructor(stage) {
-      this.stage = stage; this.pets = []; this.raf = 0; this.last = 0;
+      this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
       const root = stage.getRootNode();
       const style = document.createElement('style'); style.textContent = CSS;
       (root === document ? document.head : root).appendChild(style);
       this.loop = this.loop.bind(this);
-      this.onResize = () => this.pets.forEach(p => { if (p.x > global.innerWidth - p.w) p.x = Math.max(0, global.innerWidth - p.w); });
+      this.onResize = () => this.pets.forEach(p => p.resize());
       global.addEventListener('resize', this.onResize);
+    }
+    setSize(mode) {
+      this.size = SIZE_PCT[mode] ? mode : '中';
+      this.pets.forEach(p => p.resize());
     }
     fx(kind, x, y) {
       if (!kind || kind === '無') return;
@@ -222,7 +240,7 @@
       this.clear();
       list.filter(p => p.bitmaps.idle && p.bitmaps.idle.length).slice(0, 2).forEach((p, i, arr) => {
         const slot = global.innerWidth / (arr.length + 1) * (i + 1);
-        this.pets.push(new Pet(this, p.cfg, p.bitmaps, slot - (p.cfg.size / ASPECT) / 2));
+        this.pets.push(new Pet(this, p.cfg, p.bitmaps, slot));
       });
       if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); }
     }
@@ -263,5 +281,5 @@
     return [state, ...Array.from({ length: max }, (_, k) => `${state}_${k + 1}`)];
   }
 
-  global.QPet = { World, normalize, variantNames };
+  global.QPet = { World, normalize, variantNames, SIZES: Object.keys(SIZE_PCT) };
 })(typeof window !== 'undefined' ? window : globalThis);

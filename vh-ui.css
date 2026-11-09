@@ -107,3 +107,12 @@
 .vh .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
 .vh .sw[aria-checked="true"] { background: var(--sw-on); }
 .vh .sw[aria-checked="true"]::after { transform: translateX(20px); }
+
+/* 角色大小三段切換 */
+.vh .size { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.vh .size .lb { font-size: 12.5px; color: var(--fd-ink2); white-space: nowrap; }
+.vh .seg { display: flex; flex: 1; background: var(--fd-field); border: .5px solid var(--fd-line); border-radius: 8px; padding: 3px; gap: 3px; }
+.vh .seg button { flex: 1; border: 0; background: transparent; color: var(--fd-ink2); padding: 5px 0; border-radius: 6px; font-size: 13.5px; cursor: pointer; }
+.vh .seg button[aria-pressed="true"] { background: var(--fd-line); color: #fff; font-weight: 700; box-shadow: 0 1px 0 rgba(0,0,0,.25); cursor: default; }
+.vh .size-box { margin-top: 14px; border-radius: 12px; }
+.vh .size-box .size { margin-top: 0; }

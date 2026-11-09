@@ -1,4 +1,5 @@
-# 角色名冊｜規格書 v0.3
+# 角色名冊｜規格書 v0.4
+# size 為相對大小，120 為 1 倍；實際顯示高度依玩家選的小中大換算
 # 未填欄位套用預設值：size 120｜speed 中｜sleep_after 60｜effect_click 愛心｜effect_sleep zzz｜extras 無
 # 選角畫面依 group 分組，作品順序依本檔出現順序
 
@@ -28,7 +29,7 @@
   group: 玄曙錄
   images: [idle, sleep, click, drag, walk]
   extras: [fan, spicy, bird, drink, fight, stretch, yawn, heart]
-  size: 120
+  size: 137
   speed: 中
   sleep_after: 60
   effect_click: 驚嘆號
@@ -40,7 +41,7 @@
   group: 玄曙錄
   images: [idle, sleep, click, drag, walk]
   extras: [fan, sweets, lantern, chime, fight, stretch, yawn, heart]
-  size: 120
+  size: 140
   speed: 慢
   sleep_after: 60
   effect_click: 愛心

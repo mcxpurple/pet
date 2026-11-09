@@ -50,6 +50,7 @@
     </div>
     <section class="scard"><div class="in"><div class="pols" id="grid"></div></div></section>
     <div class="picked" id="picked"></div>
+    <div class="fd-body size-box"><div class="size"><span class="lb">角色大小</span><div class="seg" id="size" role="group" aria-label="角色大小"></div></div></div>
     <button class="tk" id="go" type="button">
       <span class="f"><span class="orn">✦</span><span class="t">開始散步</span><span class="en">let's walk</span><span class="orn">✦</span></span>
       <span class="s">🐾</span>
@@ -86,6 +87,10 @@
   $('loading').remove();
 
   const world = new QPet.World($('stage'));
+  let size = '中';
+  try { size = localStorage.getItem('pet_size') || '中'; } catch {}
+  world.setSize(size);
+  QPet.sizeSeg($('size'), world.size, s => { world.setSize(s); try { localStorage.setItem('pet_size', s); } catch {} });
   let current = store.get().filter(id => roster.some(c => c.id === id));
   let ui;
 

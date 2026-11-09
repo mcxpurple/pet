@@ -58,3 +58,19 @@
   }
   global.QPet = Object.assign(global.QPet || {}, { picker });
 })(typeof window !== 'undefined' ? window : globalThis);
+
+/* 角色大小三段切換：QPet.sizeSeg(容器, 目前值, 變更時的回呼) */
+(function (global) {
+  global.QPet.sizeSeg = function (box, value, onChange) {
+    box.innerHTML = '';
+    (global.QPet.SIZES || ["小", "中", "大"]).forEach(s => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = s; b.setAttribute('aria-pressed', String(s === value));
+      b.onclick = () => {
+        box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        onChange(s);
+      };
+      box.appendChild(b);
+    });
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
