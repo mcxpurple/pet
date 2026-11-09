@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>安裝 Chrome 版桌寵</title>
+<style>
+  :root { --bg:#f6f1f8; --card:#ffffff; --ink:#3b3142; --muted:#7d7086; --accent:#9b6fbf; --line:#e2d6ea; --code:#efe7f5; --warn:#fff6e6; --warnline:#f0d9a8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1e1a23; --card:#28212f; --ink:#ece4f2; --muted:#a395ae; --accent:#c49be6; --line:#3d3348; --code:#352c3e; --warn:#3a3020; --warnline:#6b5630; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.75 "Noto Sans TC", system-ui, sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:40px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 6px; }
+  .lead { color:var(--muted); margin:0 0 28px; }
+  h2 { font-size:18px; margin:36px 0 12px; }
+  ol.steps { list-style:none; padding:0; margin:0; counter-reset:s; }
+  ol.steps > li { counter-increment:s; position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px 16px 58px; margin-bottom:12px; }
+  ol.steps > li::before { content:counter(s); position:absolute; left:16px; top:16px; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; font-size:14px; display:grid; place-items:center; line-height:1; }
+  ol.steps b { display:block; margin-bottom:2px; }
+  code { background:var(--code); padding:1px 6px; border-radius:6px; font-size:14px; }
+  .btn { display:inline-block; margin-top:8px; background:var(--accent); color:#fff; text-decoration:none; padding:8px 16px; border-radius:10px; font-weight:600; }
+  .note { background:var(--warn); border:1px solid var(--warnline); border-radius:12px; padding:12px 16px; font-size:15px; }
+  ul { padding-left:1.2em; }
+  li { margin:4px 0; }
+  .muted { color:var(--muted); font-size:14px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>安裝 Chrome 版桌寵</h1>
+  <p class="lead">裝好之後，角色會在妳逛的每個網頁下方走來走去。適用電腦版 Chrome 與 Edge，大約 3 分鐘完成。</p>
+
+  <h2>安裝步驟</h2>
+  <ol class="steps">
+    <li><b>下載擴充功能</b>
+      下載後解壓縮，會得到一個 <code>pet-extension</code> 資料夾。<br>
+      <a class="btn" href="pet-extension.zip" download>下載 pet-extension.zip</a>
+    </li>
+    <li><b>把資料夾放到固定位置</b>
+      例如「文件」裡。Chrome 每次啟動都會從這個資料夾讀取，安裝後請保留它，不要刪除或移動。
+    </li>
+    <li><b>打開擴充功能管理頁</b>
+      在 Chrome 網址列輸入 <code>chrome://extensions</code> 後按 Enter。<br>
+      <span class="muted">Edge 請輸入 <code>edge://extensions</code>。</span>
+    </li>
+    <li><b>開啟「開發人員模式」</b>
+      在頁面右上角，把開關打開。<br>
+      <span class="muted">Edge 的開關在左側選單下方。</span>
+    </li>
+    <li><b>點「載入未封裝項目」</b>
+      選擇第 1 步解壓縮出來的 <code>pet-extension</code> 資料夾。資料夾裡要直接看得到 <code>manifest.json</code>，選錯層會無法載入。
+    </li>
+    <li><b>把圖示釘在工具列</b>
+      點網址列右邊的拼圖圖示，找到「Q版桌寵」，按旁邊的圖釘。
+    </li>
+    <li><b>選角色</b>
+      點工具列上的桌寵圖示，最多選兩隻，角色會直接出現在網頁上。<br>
+      <span class="muted">安裝前就已經開著的分頁，需要重新整理一次才會出現。</span>
+    </li>
+  </ol>
+
+  <h2>怎麼玩</h2>
+  <ul>
+    <li>點一下角色：會有反應</li>
+    <li>按住拖曳：把角色提起來，放開會掉回地面</li>
+    <li>放著不管：一段時間後會睡著，點一下就會醒</li>
+    <li>選兩隻時：走到彼此身邊會停下來打招呼；拖起其中一隻，另一隻會轉頭看</li>
+    <li>暫時不想看到：點圖示，取消勾選「顯示」</li>
+  </ul>
+
+  <h2>常見問題</h2>
+  <ul>
+    <li><b>安裝時提示「讀取及變更所有網站資料」？</b><br>這是為了讓角色顯示在每個網頁上。擴充功能只會向本站讀取角色圖片，不會收集或傳送任何網頁內容。</li>
+    <li><b>有些網頁看不到角色？</b><br>Chrome 的設定頁、擴充功能商店和新分頁空白頁，瀏覽器規定擴充功能不能出現。影片全螢幕時角色也會暫時隱藏。</li>
+    <li><b>Chrome 跳出「停用開發人員模式擴充功能」之類的提醒？</b><br>因為這個擴充功能沒有上架商店，Chrome 偶爾會提醒。選擇保留或直接關掉提醒即可。</li>
+    <li><b>手機可以用嗎？</b><br>手機版 Chrome 不支援擴充功能，請改用 <a href="./">網頁版</a>。</li>
+  </ul>
+
+  <h2>更新與移除</h2>
+  <ul>
+    <li><b>新角色</b>：不需要重新安裝。點圖示，按「重新讀取名冊」就會出現。</li>
+    <li><b>擴充功能改版</b>：重新下載 zip，解壓縮後覆蓋原本的資料夾，再到 <code>chrome://extensions</code> 按桌寵卡片上的重新載入箭頭。</li>
+    <li><b>移除</b>：到 <code>chrome://extensions</code>，在桌寵卡片上按「移除」，再刪掉資料夾即可。</li>
+  </ul>
+
+  <div class="note" style="margin-top:32px">本擴充功能未上架 Chrome 線上應用程式商店，請只從本頁下載。</div>
+</main>
+</body>
+</html>
