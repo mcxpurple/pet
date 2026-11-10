@@ -77,6 +77,10 @@
   .stampbtn .face small { font-family: ui-monospace, "Courier New", monospace; font-size: 7px; letter-spacing: .1em; }
   .stampbtn .face b { font-size: 15px; font-weight: 700; }
   .stampbtn .tap { font-size: 11px; font-weight: 700; color: #fbf3df; background: #7a2f35; border-radius: 999px; padding: 1px 9px; }
+  .stampbtn .ver { font-family: ui-monospace, "Courier New", monospace; font-size: 10.5px; color: var(--fd-ink2); letter-spacing: .04em; }
+  .vlog { margin: 10px 0 0; padding: 8px 0 0; border-top: 1px dashed rgba(176,138,62,.6); font-size: 12.5px; line-height: 1.7; }
+  .vlog b { font-family: ui-monospace, "Courier New", monospace; color: #7a2f35; margin-right: 6px; }
+  .vlog small { color: #7a5e2a; margin-left: 4px; }
   .stampbtn:active .face { transform: rotate(-8deg) translateY(3px); box-shadow: none; }
 
   /* 舊書頁卡片 */
@@ -150,7 +154,7 @@
           <p>裝好之後，角色會在妳逛的每個網頁下方走來走去。<br>適用電腦版 Chrome 與 Edge，大約三分鐘。</p>
         </div>
         <a class="stampbtn" href="pet-extension.zip" download aria-label="下載擴充功能">
-          <span class="face"><small>✦ ZIP ✦</small><b>下載</b></span><span class="tap">☝ 點我下載</span>
+          <span class="face"><small>✦ ZIP ✦</small><b>下載</b></span><span class="tap">☝ 點我下載</span><span class="ver" id="ver">v0.6.0｜2026.11.10</span>
         </a>
       </div>
     </div>
@@ -221,10 +225,25 @@
         <li><b>擴充功能改版</b>：重新下載 zip，解壓縮後覆蓋原本的資料夾，再到 <code>chrome://extensions</code> 按桌寵卡片上的重新載入箭頭。</li>
         <li><b>移除</b>：到 <code>chrome://extensions</code>，在桌寵卡片上按「移除」，再刪掉資料夾即可。</li>
       </ul>
+      <div class="vlog" id="vlog"><div><b>v0.6.0</b>最多四隻、Alt＋點叫過來、摸頭、生日慶祝、emoji 特效、版本提醒<small>11.10</small></div><div><b>v0.5.0</b>VH 介面、走路逐格、擴充動作<small>11.08</small></div></div>
       <p class="hand">本擴充功能未上架商店，請只從這一頁下載。</p>
     </div></section>
   </div>
   <p class="foot">© 2026 mcx_purple</p>
 </main>
+<script>
+/* 版本號與更新紀錄讀 version.json；改版只需更新該檔 */
+fetch('version.json', { cache: 'no-cache' }).then(r => r.json()).then(v => {
+  const d = s => s.slice(5).replace('-', '.');
+  document.getElementById('ver').textContent = `v${v.version}｜${v.date.replace(/-/g, '.')}`;
+  const box = document.getElementById('vlog'); box.textContent = '';
+  v.log.forEach(e => {
+    const row = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = 'v' + e.v;
+    const sm = document.createElement('small'); sm.textContent = d(e.date);
+    row.append(b, e.notes, sm); box.appendChild(row);
+  });
+}).catch(() => {});
+</script>
 </body>
 </html>
