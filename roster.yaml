@@ -16,7 +16,6 @@
   walk_fx: ["☕"]
   BD: "09-07"
   BD_fx: ["🍡", "🍓", "🍦"]
-  drag_mood: 微皺眉帶困擾，單手推正眼鏡，努力維持鎮定
 
 - id: yanluoxin
   name: 言洛昕
@@ -31,7 +30,6 @@
   BD: "02-29"
   BD_fx: ["🍒", "🍉", "🥭", "🍇", "🍫"]
   effect_sleep: zzz
-  drag_mood: 委屈苦笑，雙手抓著衣襟
 
 - id: qixin
   name: 麒炘
@@ -46,7 +44,6 @@
   BD: "08-30"
   BD_fx: ["🌶️", "🏮"]
   effect_sleep: zzz
-  drag_mood: 皺眉回頭瞪人，狐耳後壓，狐尾炸毛蓬起
 
 - id: qiyi
   name: 麒沂
@@ -61,7 +58,6 @@
   BD: "08-30"
   BD_fx: ["🍬", "🍯", "🍑", "🏮"]
   effect_sleep: zzz
-  drag_mood: 抱緊狐尾縮成一團，狐耳後壓，輕皺眉
 
 - id: weichiche
   name: 尉持澈
@@ -76,7 +72,6 @@
   BD: "01-16"
   BD_fx: ["🧁", "🥐"]
   effect_sleep: zzz
-  drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
 
 - id: caelum
   name: Caelum
@@ -91,7 +86,6 @@
   BD: "02-01"
   BD_fx: ["🍷", "🍾", "🍇"]
   effect_sleep: zzz
-  drag_mood: 雙手攤開聳肩，挑眉從容微笑
 
 - id: peisiyuan
   name: 裴思垣
@@ -106,7 +100,6 @@
   BD: "01-01"
   BD_fx: ["🍍", "🍤", "🌿"]
   effect_sleep: zzz
-  drag_mood: 無奈嘆氣，單手扶額
 
 - id: shaoyuquan
   name: 邵昱駩
@@ -121,7 +114,6 @@
   BD: "10-09"
   BD_fx: ["🍒", "🍅", "🍾"]
   effect_sleep: zzz
-  drag_mood: 毫不慌張，單手整理袖口，半垂著眼慵懶微笑
 
 - id: rex
   name: Rex
@@ -136,7 +128,6 @@
   BD: "08-30"
   BD_fx: ["🌶️", "🎸", "🔥"]
   effect_sleep: zzz
-  drag_mood: 雙手抱胸，皺眉回頭瞪人，一臉不爽
 
 - id: lyx
   name: Lyx
@@ -151,4 +142,3 @@
   BD: "08-30"
   BD_fx: ["🍬", "🍰", "🌙"]
   effect_sleep: zzz
-  drag_mood: 安靜縮肩，雙手抓住背心下襬，無奈垂眼
