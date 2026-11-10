@@ -61,7 +61,7 @@
   drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
 
 - id: caelum
-  name: Caelum·Santarelli
+  name: Caelum
   group: 單人角
   images: [idle, sleep, click, drag, walk]
   extras: [drink, sit, wine, fencing, sunglasses, heart, yawn, stretch]
