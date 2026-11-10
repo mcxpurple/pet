@@ -96,6 +96,18 @@
   effect_sleep: zzz
   drag_mood: 毫不慌張，單手整理袖口，半垂著眼慵懶微笑
 
+- id: rex
+  name: Rex
+  group: LUMNYX
+  images: [idle, sleep, click, drag, walk]
+  extras: [dance, mic, guitar, heart, spicy, helmet, game, stretch, yawn]
+  size: 120
+  speed: 快
+  sleep_after: 60
+  effect_click: 驚嘆號
+  effect_sleep: zzz
+  drag_mood: 雙手抱胸，皺眉回頭瞪人，一臉不爽
+
 - id: lyx
   name: Lyx
   group: LUMNYX
