@@ -95,3 +95,15 @@
   effect_click: 愛心
   effect_sleep: zzz
   drag_mood: 毫不慌張，單手整理袖口，半垂著眼慵懶微笑
+
+- id: lyx
+  name: Lyx
+  group: LUMNYX
+  images: [idle, sleep, click, drag, walk]
+  extras: [sing, bow, heart, sweets, accordion, scarf, stretch, yawn]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: 音符
+  effect_sleep: zzz
+  drag_mood: 安靜縮肩，雙手抓住背心下襬，無奈垂眼
