@@ -1,8 +1,9 @@
-/* Q版桌寵引擎 v0.7｜網頁版與擴充功能共用
+/* Q版桌寵引擎 v0.8｜網頁版與擴充功能共用
    用法：const world = new QPet.World(stageElement, { max });
          world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] }
          world.setSize('小' | '中' | '大');     // 玩家選擇的角色大小，立即生效
-         world.callTo(clientX);                // 叫最近的角色小跑步過來 */
+         world.callTo(clientX);                // 叫最近的角色小跑步過來
+   選項：opts.once(key) → Promise<boolean>，同一 key 第一次呼叫回傳 true（吃飯提醒一天一次用；預設存在 localStorage） */
 (function (global) {
   const SPEED = { '慢': 28, '中': 45, '快': 70 };          // 走路速度 px/秒
   const FRAME = { '慢': 0.18, '中': 0.15, '快': 0.12 };     // 走路每格秒數
@@ -45,6 +46,13 @@
     @keyframes qzzz{0%{opacity:0;transform:translate(0,0) scale(.6)}25%{opacity:1}100%{opacity:0;transform:translate(18px,-46px) scale(1.15)}}
     .qfx.emo{font-size:22px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
     .qfx.drift{animation:qdrift 2.4s ease-out forwards;}
+    .qfx.hold{animation:qhold 3s ease-out forwards;}
+    @keyframes qhold{0%{opacity:0;transform:translate(-50%,0) scale(.5)}12%{opacity:1;transform:translate(-50%,-14px) scale(1.1)}20%{transform:translate(-50%,-12px) scale(1)}85%{opacity:1;transform:translate(-50%,-16px) scale(1)}100%{opacity:0;transform:translate(-50%,-24px) scale(1)}}
+    .qfx.dizzy{animation:none;line-height:1;transform:translate(-50%,-6px) scaleY(.45);}
+    .qfx.dizzy .ring{position:relative;width:44px;height:44px;animation:qspin .7s linear infinite;}
+    .qfx.dizzy i{position:absolute;left:50%;top:50%;margin:-8px 0 0 -6px;font:700 15px/1 sans-serif;font-style:normal;color:#f5c84a;}
+    .qfx.dizzy i:nth-child(1){transform:translate(0,-19px)} .qfx.dizzy i:nth-child(2){transform:translate(17px,10px)} .qfx.dizzy i:nth-child(3){transform:translate(-17px,10px)}
+    @keyframes qspin{to{transform:rotate(360deg)}}
     @keyframes qdrift{0%{opacity:0;transform:translate(-50%,0) scale(.5) rotate(0)}15%{opacity:1;transform:translate(-50%,-8px) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-70px) scale(.9) rotate(var(--rot,0deg))}}`;
 
   const SVG = {
@@ -53,6 +61,37 @@
     '驚嘆號': '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="10" y="3" width="4" height="12" rx="2" fill="#f0a23a"/><circle cx="12" cy="19.5" r="2.2" fill="#f0a23a"/></svg>',
     '閃光': '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="#f5c84a" d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>'
   };
+
+  const MOVERS = ['walk', 'run', 'stand', 'look', 'meet', 'follow'];   // 會移動的模式
+  /* 同作品才會一起睡、跟著走；單人角之間視為不同作品 */
+  const sameGroup = (a, b) => a.c.group === b.c.group && a.c.group !== '單人角';
+
+  /* 吃飯時間：12 點與 18 點這一小時內提醒一次，之後比較常吃東西 */
+  const MEAL_HOURS = [12, 18];
+  const MEAL_FX = ['🍙', '🍱', '🍜', '🍚', '🥢'];
+
+  /* 節日：所有角色飄節慶 emoji；農曆日期已換算至 2040 年 */
+  const LUNAR_NY = { 2026: '02-17', 2027: '02-06', 2028: '01-26', 2029: '02-13', 2030: '02-03', 2031: '01-23', 2032: '02-11', 2033: '01-31',
+    2034: '02-19', 2035: '02-08', 2036: '01-28', 2037: '02-15', 2038: '02-04', 2039: '01-24', 2040: '02-12' };
+  const MID_AUTUMN = { 2026: '09-25', 2027: '09-15', 2028: '10-03', 2029: '09-22', 2030: '09-12', 2031: '10-01', 2032: '09-19', 2033: '09-08',
+    2034: '09-27', 2035: '09-16', 2036: '10-04', 2037: '09-24', 2038: '09-13', 2039: '10-02', 2040: '09-20' };
+  const FEST_FX = {
+    xmas: ['🎄', '🎁', '⛄', '🔔', '🦌'],
+    newyear: ['🎆', '🎇', '🥂', '🎉'],
+    lunar: ['🧧', '🧨', '🏮', '🍊', '🥟'],
+    moon: ['🥮', '🌕', '🐇', '🏮']
+  };
+  function festNow() {
+    const d = new Date(), y = d.getFullYear(), md = String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    if (md === '12-24' || md === '12-25') return FEST_FX.xmas;
+    if (md === '12-31' || md === '01-01') return FEST_FX.newyear;
+    if (LUNAR_NY[y]) {   // 除夕到初三
+      const [m, dd] = LUNAR_NY[y].split('-').map(Number), ny = new Date(y, m - 1, dd), diff = Math.round((new Date(y, d.getMonth(), d.getDate()) - ny) / 864e5);
+      if (diff >= -1 && diff <= 2) return FEST_FX.lunar;
+    }
+    if (MID_AUTUMN[y] === md) return FEST_FX.moon;
+    return null;
+  }
 
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = list => list[Math.floor(Math.random() * list.length)];
@@ -65,6 +104,7 @@
       this.speed = SPEED[cfg.speed] || SPEED['中'];
       this.frameT = FRAME[cfg.speed] || FRAME['中'];
       this.t = 0; this.modeT = 0; this.phase = 0; this.meetCool = 0; this.fxT = 0;
+      this.vx = 0; this.peekCool = rand(8, 20); this.edgeOK = false; this.goal = null; this.lead = null; this.next = null;
       this.lastTouch = performance.now();
       this.el = document.createElement('div'); this.el.className = 'qpet';
       this.cv = document.createElement('canvas');
@@ -105,50 +145,103 @@
     showState(s) { this.draw(pick(this.has(s) ? this.b[s] : this.b.idle)); }
     setMode(m, dur, pose) {
       this.mode = m; this.modeT = 0; this.modeDur = dur || 0; this.pose = pose || '';
-      if (m !== 'run') this.goal = null;
+      this.goal = null; this.arrive = null; this.next = null;
+      if (m !== 'follow') this.lead = null;
       if (m === 'pat') { this.v = 0; this.showState(this.has('heart') ? 'heart' : 'click'); return; }
-      if (m === 'stand') { this.lookAt = Math.random() < .5 ? [.7, 1.4] : []; }
-      if (!['walk', 'run', 'stand', 'look', 'meet'].includes(m)) this.v = 0;
-      const still = { stand: 'idle', look: 'idle', meet: 'idle', fall: 'drag' };
+      if (m === 'stand') { this.lookAt = !this.pose && Math.random() < .5 ? [.7, 1.4] : []; }
+      if (!MOVERS.includes(m)) this.v = 0;
+      const still = { stand: 'idle', look: 'idle', meet: 'idle', follow: 'idle', fall: 'drag', trip: 'idle' };
       if (m === 'walk' || m === 'run') return;          // 走路圖於 update 逐格切換
-      if (m === 'stand' && this.v > 3) return;           // 煞車中延續走路圖
+      if (['stand', 'follow', 'look'].includes(m) && this.v > 3) return;   // 煞車中延續走路圖
       this.showState(still[m] || m);
     }
+    /* 走到 x 後執行 arrive；沒有 arrive 則停下 */
+    goTo(x, mode, arrive) {
+      const lo = this.edgeOK ? -this.w : 0, hi = this.edgeOK ? global.innerWidth : Math.max(0, global.innerWidth - this.w);
+      this.setMode(mode, 60);
+      this.goal = Math.min(Math.max(lo, x), hi); this.arrive = arrive || null;
+      this.dir = this.goal > this.x ? 1 : -1;
+    }
+    /* 動作結束時若有排定的下一步就執行，回傳是否已處理 */
+    done() { if (!this.next) return false; const f = this.next; this.next = null; f(); return true; }
     touch() { this.lastTouch = performance.now(); }
-    /* 打呵欠或伸懶腰：有圖就用圖，沒有就由程式做動作 */
-    tiredAct(prefer) {
+    cx() { return this.x + this.w / 2; }
+    free() { return ['walk', 'stand'].includes(this.mode) && !this.goal && !this.edgeOK; }
+    /* 打呵欠或伸懶腰：有圖就用圖，沒有就由程式做動作；spread 為 true 時附近角色可能跟著打呵欠 */
+    tiredAct(prefer, spread = true) {
       const opts = ['yawn', 'stretch'].filter(n => this.has(n));
-      const want = prefer && this.has(prefer) ? prefer : opts.length ? pick(opts) : null;
+      const want = prefer && this.has(prefer) ? prefer : !prefer && opts.length ? pick(opts) : null;
+      const kind = want || prefer || pick(['yawn', 'stretch']);
       if (want) this.setMode(want, rand(2.5, 4));
-      else this.setMode('stand', 1.8, prefer || pick(['yawn', 'stretch']));
+      else this.setMode('stand', 1.8, kind);
+      if (spread && kind === 'yawn') this.w0.contagion(this);
     }
     /* 被叫過來：小跑步到指定位置 */
     callTo(x) {
-      this.wake(); this.touch();
-      this.goal = Math.min(Math.max(0, x - this.w / 2), Math.max(0, global.innerWidth - this.w));
-      this.dir = this.goal > this.x ? 1 : -1;
-      this.setMode('run', 15);
-      this.goal = Math.min(Math.max(0, x - this.w / 2), Math.max(0, global.innerWidth - this.w));
+      this.wake(); this.touch(); this.edgeOK = false;
+      this.goTo(x - this.w / 2, 'run', () => { this.setMode('stand', rand(1.4, 2.4)); this.w0.fx('音符', this.cx(), this.y + 4); });
     }
     pat() {
       this.wake(); this.touch();
       this.setMode('pat', 1.8);
-      const cx = this.x + this.w / 2;
+      const cx = this.cx();
       this.w0.fx('愛心', cx, this.y + 4);
       setTimeout(() => this.w0.fx('愛心', cx + 14, this.y + 12), 260);
     }
     wake() { if (this.mode === 'sleep') this.setMode('stand', 1); }
+    sleepNow(chain = true) {
+      this.setMode('sleep'); this.fxT = .4;
+      if (chain) this.w0.onSleep(this);
+    }
+    /* 睡醒迷糊：恍神晃一下，再伸懶腰或打呵欠 */
+    rouse() {
+      this.touch();
+      this.setMode('stand', 2, 'groggy');
+      this.next = () => this.tiredAct(pick(['stretch', 'yawn']), false);
+    }
+    /* 突然想起事情：停下、冒驚嘆號，轉身小跑 */
+    remember() {
+      this.setMode('stand', .8, 'startle');
+      this.w0.fx('驚嘆號', this.cx(), this.y + 4);
+      this.next = () => { this.dir *= -1; this.setMode('run', rand(1.6, 2.6)); };
+    }
+    /* 小跑跌倒 */
+    trip() {
+      this.setMode('trip', 1.6);
+      setTimeout(() => this.w0.fx('💨', this.cx() - this.dir * this.w * .3, this.y + this.h * .82), 180);
+    }
+    /* 邊邊探頭：走出畫面一半，停一下再轉身探頭回來 */
+    peek(side) {
+      this.edgeOK = true; this.peekCool = 40;
+      const out = side < 0 ? -this.w * .55 : global.innerWidth - this.w * .45;
+      this.goTo(out, 'walk', () => {
+        this.setMode('stand', rand(1, 1.8), 'hide');
+        this.next = () => {
+          this.dir = -side;
+          this.setMode('stand', 1.6, 'peek');
+          this.next = () => { this.edgeOK = false; this.setMode('walk', rand(3, 5)); };
+        };
+      });
+    }
+    /* 跟在 lead 後面走 */
+    follow(lead, dur) { this.setMode('follow', dur); this.lead = lead; }
+    /* 吃東西：有 eat／drink 圖就用圖，沒有就由程式做捧碗吃的動作 */
+    munch(dur) {
+      const opts = ['eat', 'drink'].filter(n => this.has(n));
+      if (opts.length) this.setMode(pick(opts), dur || rand(4, 6));
+      else this.setMode('stand', dur || 3.2, 'munch');
+    }
     bindInput() {
       let down = null;
       this.el.addEventListener('pointerdown', e => {
         e.preventDefault(); e.stopPropagation();
         this.el.setPointerCapture(e.pointerId);
-        down = { x: e.clientX, y: e.clientY, moved: false };
+        down = { x: e.clientX, y: e.clientY, moved: false, trail: [], turns: [], lastSign: 0 };
       });
       let rub = [];
       this.el.addEventListener('pointermove', e => {
         if (!down) {   // 摸頭：滑鼠在頭部來回滑動三次
-          if (e.pointerType !== 'mouse' || ['drag', 'fall', 'pat'].includes(this.mode)) return;
+          if (e.pointerType !== 'mouse' || ['drag', 'fall', 'pat', 'trip'].includes(this.mode)) return;
           const r = this.el.getBoundingClientRect();
           if (e.clientY - r.top > r.height * .42) { rub = []; return; }
           const now = performance.now();
@@ -159,30 +252,73 @@
           return;
         }
         if (!down.moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) {
-          down.moved = true; this.wake(); this.setMode('drag'); this.el.classList.add('dragging');
+          down.moved = true; this.wake(); this.edgeOK = false; this.setMode('drag'); this.el.classList.add('dragging');
         }
-        if (down.moved) { this.x = e.clientX - this.w / 2; this.y = e.clientY - this.h * .12; this.touch(); }
+        if (down.moved) {
+          this.x = e.clientX - this.w / 2; this.y = e.clientY - this.h * .12; this.touch();
+          const now = performance.now();
+          down.trail.push([now, e.clientX, e.clientY]); down.trail = down.trail.filter(a => now - a[0] < 100);
+          // 搖晃偵測：快速左右甩動的折返次數
+          const tr = down.trail;
+          if (tr.length > 1) {
+            const vx = (tr[tr.length - 1][1] - tr[tr.length - 2][1]);
+            const s = Math.abs(vx) > 6 ? Math.sign(vx) : 0;
+            if (s && down.lastSign && s !== down.lastSign) down.turns.push(now);
+            if (s) down.lastSign = s;
+            down.turns = down.turns.filter(t => now - t < 1400);
+          }
+        }
       });
       const up = e => {
         if (!down) return;
         e && e.stopPropagation();
-        if (down.moved) { this.el.classList.remove('dragging'); this.vy = 0; this.setMode('fall'); }
-        else this.onClick();
+        if (down.moved) {
+          this.el.classList.remove('dragging');
+          const tr = down.trail, a = tr[0], b = tr[tr.length - 1];
+          const dt = a && b && b[0] > a[0] ? (b[0] - a[0]) / 1000 : 0;
+          const vx = dt ? (b[1] - a[1]) / dt : 0, vy = dt ? (b[2] - a[2]) / dt : 0;
+          this.throwIt(Math.max(-1600, Math.min(1600, vx)), Math.max(-1600, Math.min(1400, vy)), down.turns.length >= 5);
+        } else this.onClick();
         down = null; this.touch();
       };
       this.el.addEventListener('pointerup', up);
       this.el.addEventListener('pointercancel', up);
       this.el.addEventListener('click', e => e.stopPropagation());
     }
+    /* 放手：依甩動速度飛出去；dizzy 為 true 時落地後頭暈 */
+    throwIt(vx, vy, dizzy) {
+      this.setMode('fall');
+      this.vx = Math.abs(vx) > 120 ? vx : 0; this.vy = vy; this.bounces = 0; this.bonked = false;
+      this.hard = Math.hypot(vx, vy) > 900; this.dizzy = dizzy;
+      if (this.vx) this.dir = Math.sign(this.vx);
+    }
+    land() {
+      this.vx = 0; this.vy = 0;
+      if (this.dizzy) {
+        this.setMode('stand', 2.6, 'dizzy');
+        this.w0.fx('暈', this.cx(), this.y + this.h * .02);
+      } else if (this.hard || this.bounces) this.setMode('stand', 1.4, 'groggy');
+      else this.setMode('stand', rand(1, 2));
+    }
     onClick() {
-      this.wake(); this.touch();
+      if (this.mode === 'sleep') return this.rouse();
+      this.touch();
       this.setMode('click', 1.2);
-      this.w0.fx(this.bd ? [...BD_CLICK, ...(this.c.BD_fx || [])] : this.c.effect_click, this.x + this.w / 2, this.y + 4);
+      this.w0.fx(this.bd ? [...BD_CLICK, ...(this.c.BD_fx || [])] : this.c.effect_click, this.cx(), this.y + 4);
     }
     idleChoice() {
       const extras = (this.c.extras || []).filter(n => this.has(n));
-      const rule = SLOT_RULE[this.w0.slot] || SLOT_RULE.day;
+      const w = this.w0, rule = SLOT_RULE[w.slot] || SLOT_RULE.day;
       if (Math.random() < rule.tired) return this.tiredAct();
+      if (w.mealTime() && Math.random() < .3) {   // 吃飯時間比較常吃東西
+        if (!['eat', 'drink'].some(n => this.has(n))) w.fx(MEAL_FX, this.cx(), this.y + this.h * .1, true);
+        return this.munch();
+      }
+      if (Math.random() < .05) return this.remember();
+      if (Math.random() < .1) {   // 同作品的角色偶爾跟著走
+        const lead = w.pets.find(p => p !== this && sameGroup(p, this) && ['walk', 'run'].includes(p.mode) && !p.goal);
+        if (lead) return this.follow(lead, rand(10, 16));
+      }
       const r = Math.random();
       if (extras.length && r < .25) this.setMode(pick(extras), rand(4, 8));
       else if (r < .5) this.setMode('stand', rand(1.8, 4));
@@ -193,24 +329,37 @@
       }
     }
     update(dt, other) {
-      this.t += dt; this.modeT += dt; this.meetCool -= dt;
-      const g = this.ground();
+      this.t += dt; this.modeT += dt; this.meetCool -= dt; this.peekCool -= dt;
+      const g = this.ground(), W = global.innerWidth;
       let bob = 0, tilt = 0, sy = 1;
       const m = this.mode;
+      const rule = SLOT_RULE[this.w0.slot] || SLOT_RULE.day;
+      const spd = this.speed * rule.spd;
 
       // 起步與煞車
-      if (['walk', 'run', 'stand', 'look', 'meet'].includes(m)) {
-        const spd = this.speed * (SLOT_RULE[this.w0.slot] || SLOT_RULE.day).spd;
-        const target = m === 'walk' ? spd : m === 'run' ? (this.goal != null ? this.speed : spd) * RUN_MULT : 0;
+      if (MOVERS.includes(m)) {
+        const base = this.goal != null ? this.speed : spd;   // 有目的地時不受時段減速
+        let target = m === 'walk' ? base : m === 'run' ? base * RUN_MULT : 0;
+        if (m === 'follow' && this.lead) {
+          const L = this.lead, want = L.x - L.dir * L.w * .8, dx = want - this.x;
+          if (Math.abs(dx) > 14) { this.dir = Math.sign(dx); target = Math.min(spd * 1.5, Math.abs(dx) * 1.5); }
+          else if (this.v < 4) this.dir = L.dir;
+        }
+        if (m === 'look' && this.gawk && other) {   // 圍觀：走到被拖起的角色旁邊
+          const dx = other.cx() - this.cx(), stop = (other.w + this.w) * .6;
+          if (Math.abs(dx) > stop) { this.dir = Math.sign(dx); target = spd * 1.2; }
+        }
         const d = target - this.v;
         this.v += Math.sign(d) * Math.min(Math.abs(d), ACCEL * (m === 'run' ? 1.6 : 1) * dt);
         this.x += this.dir * this.v * dt;
-        if (this.x < 0) { this.x = 0; this.dir = 1; }
-        if (this.x > global.innerWidth - this.w) { this.x = global.innerWidth - this.w; this.dir = -1; }
+        const lo = this.edgeOK ? -this.w : 0, hi = this.edgeOK ? W : W - this.w;
+        if (this.x < lo) { this.x = lo; this.dir = 1; this.edgeHit(-1); }
+        else if (this.x > hi) { this.x = hi; this.dir = -1; this.edgeHit(1); }
       }
       const moving = this.v > 3;
+      if (this.edgeOK && this.goal == null && !['hide', 'peek'].includes(this.pose) && this.x >= 0 && this.x <= W - this.w) this.edgeOK = false;
 
-      if (moving && ['walk', 'run', 'stand', 'look', 'meet'].includes(m)) {
+      if (moving && MOVERS.includes(m)) {
         if (this.has('walk')) {
           this.phase += dt / this.frameT * Math.min(this.v / this.speed, 1.7);
           this.draw(this.b.walk[Math.floor(this.phase) % this.b.walk.length]);
@@ -221,26 +370,46 @@
           bob = -Math.abs(Math.sin(this.phase)) * (m === 'run' ? 7 : 5);
           tilt = Math.sin(this.phase) * 2;
         }
-      } else if (['stand', 'look', 'meet'].includes(m)) {
+      } else if (['stand', 'look', 'meet', 'follow'].includes(m)) {
         this.draw(this.b.idle[0]);
         sy = 1 + Math.sin(this.t * 2.2) * .012;
       }
 
+      const ramp = k => Math.sin(Math.min(this.modeT / k, 1) * Math.PI);
       switch (m) {
         case 'walk': case 'run':
-          if (this.goal != null && Math.abs(this.x - this.goal) < 8) { this.setMode('stand', rand(1.4, 2.4)); this.w0.fx('音符', this.x + this.w / 2, this.y + 4); break; }
-          if (this.goal != null) this.dir = this.goal > this.x ? 1 : -1;
+          if (this.goal != null) {
+            this.dir = this.goal > this.x ? 1 : -1;
+            if (Math.abs(this.x - this.goal) < 8) {
+              const f = this.arrive; this.goal = null; this.arrive = null;
+              if (f) f(); else this.setMode('stand', rand(1.4, 2.4));
+            }
+            break;
+          }
+          if (m === 'run' && moving && Math.random() < .025 * dt) { this.trip(); break; }   // 小跑偶爾跌倒
           if (this.modeT > this.modeDur) this.setMode('stand', rand(1.8, 4));
+          break;
+        case 'follow':
+          if (!this.lead || !['walk', 'run', 'stand', 'follow'].includes(this.lead.mode) || this.modeT > this.modeDur) this.setMode('stand', rand(1.5, 3));
           break;
         case 'pat':
           sy = 1 - .05 * Math.abs(Math.sin(this.t * 8));
-          if (this.modeT > this.modeDur) this.setMode('stand', rand(1, 2));
+          if (this.modeT > this.modeDur && !this.done()) this.setMode('stand', rand(1, 2));
           break;
         case 'stand':
-          if (this.pose === 'stretch' && !moving) sy = 1 + Math.sin(Math.min(this.modeT / 1.6, 1) * Math.PI) * .1;
-          if (this.pose === 'yawn' && !moving) tilt = -4 * Math.sin(Math.min(this.modeT / 1.6, 1) * Math.PI);
+          if (!moving) {
+            const p = this.pose;
+            if (p === 'stretch') sy = 1 + ramp(1.6) * .1;
+            if (p === 'yawn') tilt = -4 * ramp(1.6);
+            if (p === 'groggy') { tilt = Math.sin(this.t * 2.6) * 5; sy = .985; }
+            if (p === 'dizzy') tilt = Math.sin(this.t * 6) * 8 * Math.max(.3, 1 - this.modeT / this.modeDur);
+            if (p === 'startle') bob = -ramp(.3) * 9;
+            if (p === 'peek') tilt = this.dir * 9 * Math.min(this.modeT / .3, 1);
+            if (p === 'munch') { sy = 1 - .025 * Math.abs(Math.sin(this.t * 7)); bob = -Math.abs(Math.sin(this.t * 7)) * 1.5;
+              this.fxT -= dt; if (this.fxT <= 0) { this.fxT = 1.1; this.w0.fx(MEAL_FX, this.cx() + this.dir * this.w * .2, this.y + this.h * .25); } }
+          }
           if (this.lookAt.length && !moving && this.modeT > this.lookAt[0]) { this.dir *= -1; this.lookAt.shift(); }
-          if (this.modeT > this.modeDur && !moving) this.idleChoice();
+          if (this.modeT > this.modeDur && !moving && !this.done()) this.idleChoice();
           break;
         case 'click':
           bob = -Math.sin(Math.min(this.modeT / (this.has('click') ? .35 : .4), 1) * Math.PI) * (this.has('click') ? 8 : 18);
@@ -251,8 +420,24 @@
           break;
         case 'fall':
           this.vy += GRAVITY * dt; this.y += this.vy * dt;
-          if (this.y >= g) { this.y = g; this.vy = 0; this.setMode('stand', rand(1, 2)); }
+          this.x += this.vx * dt; this.vx *= Math.max(0, 1 - .7 * dt);
+          if (this.x < 0) { this.x = 0; this.vx = Math.abs(this.vx) * .5; }
+          if (this.x > W - this.w) { this.x = W - this.w; this.vx = -Math.abs(this.vx) * .5; }
+          if (Math.abs(this.vx) > 60) this.dir = Math.sign(this.vx);
+          tilt = Math.max(-25, Math.min(25, this.vx * .02));
+          if (!this.bonked && this.vy > 0) this.w0.bonk(this);
+          if (this.y >= g) {
+            this.y = g;
+            if (this.vy > 650) { this.vy = -this.vy * .35; this.vx *= .6; this.bounces++; }
+            else this.land();
+          }
           break;
+        case 'trip': {
+          const t = this.modeT, k = this.dir * 82;
+          tilt = t < .18 ? k * t / .18 : t < 1.1 ? k : k * Math.max(0, 1 - (t - 1.1) / .4);
+          if (t > this.modeDur) this.setMode('stand', .9, 'groggy');
+          break;
+        }
         case 'sleep':
           sy = 1 + Math.sin(this.t * 1.4) * .015;
           if (!this.has('sleep')) tilt = 6;
@@ -268,40 +453,45 @@
           }
           break;
         case 'look':
-          if (other) this.dir = other.x > this.x ? 1 : -1;
-          if (!other || (other.mode !== 'drag' && other.mode !== 'fall')) this.setMode('stand', 1.5);
+          if (other && (!this.gawk || this.v < 4)) this.dir = other.x > this.x ? 1 : -1;
+          if (!other || (other.mode !== 'drag' && other.mode !== 'fall')) { this.gawk = false; this.setMode('stand', 1.5); }
           break;
         default:   // 擴充動作
-          if (this.modeT > this.modeDur) this.setMode('walk', rand(3, 6));
+          if (this.modeT > this.modeDur && !this.done()) this.setMode('walk', rand(3, 6));
       }
 
       if (!['drag', 'fall'].includes(this.mode)) this.y = g;
 
       // 散步時偶爾飄出角色專屬 emoji
-      const cx = this.x + this.w / 2;
+      const cx = this.cx();
       if (moving && this.c.walk_fx && this.c.walk_fx.length && (this.mode === 'walk' || this.mode === 'run')) {
         this.walkFxT -= dt;
         if (this.walkFxT <= 0) { this.walkFxT = rand(10, 20); this.w0.fx(this.c.walk_fx, cx + rand(-10, 10), this.y + this.h * .08, true); }
       }
-      // 生日當天：散步與站著時飄出慶生 emoji
-      if (this.bd && ['walk', 'run', 'stand'].includes(this.mode)) {
-        this.bdT -= dt;
-        if (this.bdT <= 0) {
-          this.bdT = rand(2.5, 4.5);
-          const pool = [...BD_POOL, ...(this.c.BD_fx || [])];
-          this.w0.fx(pool, cx + rand(-this.w * .4, this.w * .4), this.y + this.h * .1, true);
-          if (Math.random() < .5) setTimeout(() => this.w0.fx(pool, cx + rand(-this.w * .4, this.w * .4), this.y + this.h * .2, true), 300);
+      // 生日當天：散步與站著時飄出慶生 emoji；節日則所有角色飄節慶 emoji（生日優先）
+      if (['walk', 'run', 'stand', 'follow'].includes(this.mode)) {
+        const fest = this.bd ? [...BD_POOL, ...(this.c.BD_fx || [])] : this.w0.fest;
+        if (fest) {
+          this.bdT -= dt;
+          if (this.bdT <= 0) {
+            this.bdT = this.bd ? rand(2.5, 4.5) : rand(6, 10);
+            this.w0.fx(fest, cx + rand(-this.w * .4, this.w * .4), this.y + this.h * .1, true);
+            if (this.bd && Math.random() < .5) setTimeout(() => this.w0.fx(fest, cx + rand(-this.w * .4, this.w * .4), this.y + this.h * .2, true), 300);
+          }
         }
       }
 
-      const sleepAfter = this.c.sleep_after * (SLOT_RULE[this.w0.slot] || SLOT_RULE.day).sleep;
-      if ((performance.now() - this.lastTouch) / 1000 > sleepAfter && ['walk', 'stand'].includes(this.mode)) {
-        this.setMode('sleep'); this.fxT = .4;
-      }
+      const sleepAfter = this.c.sleep_after * rule.sleep;
+      if ((performance.now() - this.lastTouch) / 1000 > sleepAfter && this.free()) this.sleepNow();
+
       const flip = (this.dir === 1) === IMAGE_FACES_RIGHT ? 1 : -1;
-      this.el.style.transformOrigin = this.mode === 'drag' ? '50% 12%' : '50% 100%';
+      this.el.style.transformOrigin = this.mode === 'drag' ? '50% 12%' : this.mode === 'fall' ? '50% 50%' : '50% 100%';
       this.el.style.transform = `translate(${this.x}px,${this.y + bob}px) rotate(${tilt}deg) scale(${flip},${sy})`;
-      this.el.style.zIndex = this.mode === 'drag' ? 10 : 1;
+      this.el.style.zIndex = ['drag', 'fall'].includes(this.mode) ? 10 : 1;
+    }
+    /* 走到畫面邊緣：散步中偶爾探頭 */
+    edgeHit(side) {
+      if (this.mode === 'walk' && !this.goal && !this.edgeOK && this.peekCool <= 0 && Math.random() < .35) this.peek(side);
     }
     destroy() { this.el.remove(); }
   }
@@ -309,7 +499,9 @@
   class World {
     constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
-      this.slot = slotNow(); this.slotT = 0;
+      this.slot = slotNow(); this.slotT = 0; this.fest = festNow();
+      this.once = opts.once || (key => { try { if (localStorage.getItem('pet_meal') === key) return Promise.resolve(false); localStorage.setItem('pet_meal', key); } catch {} return Promise.resolve(true); });
+      document.addEventListener('visibilitychange', () => this.mealCheck());
       this.max = opts.max || 2;                         // 同時出現上限：網頁版與擴充功能皆為 4
       const root = stage.getRootNode();
       const style = document.createElement('style'); style.textContent = CSS;
@@ -328,13 +520,15 @@
       if (!kind || kind === '無') return;
       kind = String(kind);
       const el = document.createElement('div');
-      if (kind === 'zzz') { el.className = 'qfx zzz'; el.textContent = 'z'; el.style.fontSize = (12 + Math.random() * 8) + 'px'; }
+      if (kind === '暈') { el.className = 'qfx dizzy'; el.innerHTML = '<div class="ring"><i>★</i><i>★</i><i>★</i></div>'; }
+      else if (kind === 'zzz') { el.className = 'qfx zzz'; el.textContent = 'z'; el.style.fontSize = (12 + Math.random() * 8) + 'px'; }
       else if (SVG[kind]) { el.className = 'qfx'; el.innerHTML = SVG[kind]; }
       else { el.className = 'qfx emo'; el.textContent = kind; }
-      if (drift) { el.classList.add('drift'); el.style.setProperty('--dx', rand(-24, 24) + 'px'); el.style.setProperty('--rot', rand(-30, 30) + 'deg'); }
+      if (drift === 'hold') el.classList.add('hold');
+      else if (drift) { el.classList.add('drift'); el.style.setProperty('--dx', rand(-24, 24) + 'px'); el.style.setProperty('--rot', rand(-30, 30) + 'deg'); }
       el.style.left = x + 'px'; el.style.top = y + 'px';
       this.stage.appendChild(el);
-      setTimeout(() => el.remove(), 2500);
+      setTimeout(() => el.remove(), kind === '暈' ? 2600 : 3200);
     }
     set(list) {
       this.clear();
@@ -342,7 +536,7 @@
         const slot = global.innerWidth / (arr.length + 1) * (i + 1);
         this.pets.push(new Pet(this, p.cfg, p.bitmaps, slot));
       });
-      if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); }
+      if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); setTimeout(() => this.mealCheck(), 2500); }
     }
     clear() { cancelAnimationFrame(this.raf); this.pets.splice(0).forEach(p => p.destroy()); }
     /* 叫過來：離 clientX 最近、沒被拖著的角色小跑步過去 */
@@ -356,33 +550,96 @@
     loop(now) {
       const dt = Math.min((now - this.last) / 1000, .05); this.last = now;
       this.slotT -= dt;
-      if (this.slotT <= 0) {   // 每 30 秒確認一次時段，換時段時讓大家打個呵欠或伸懶腰
+      if (this.slotT <= 0) {   // 每 30 秒確認一次時段、節日、吃飯時間與列隊散步
         this.slotT = 30;
         const s = slotNow();
-        if (s !== this.slot) { this.slot = s; this.pets.forEach(p => { if (['walk', 'stand'].includes(p.mode)) p.tiredAct(); }); }
+        if (s !== this.slot) { this.slot = s; this.pets.forEach(p => { if (p.free()) p.tiredAct(null, false); }); }
+        this.fest = festNow();
+        this.mealCheck();
+        if (Math.random() < .08) this.parade();
       }
       const ps = this.pets;
       ps.forEach(p => p.update(dt, p.target));
-      // 拖曳：拖起其中一隻時，其他所有角色轉頭看牠
+      // 拖曳：拖起其中一隻時，其他角色轉頭看；附近的會走過來圍觀
       ps.forEach(p => {
         if (p.mode !== 'drag') return;
-        ps.forEach(q => { if (q !== p && ['walk', 'run', 'stand', 'meet'].includes(q.mode)) { q.target = p; q.setMode('look'); } });
+        ps.forEach(q => {
+          if (q === p || !['walk', 'run', 'stand', 'meet', 'follow'].includes(q.mode) || q.edgeOK) return;
+          q.target = p; q.gawk = Math.abs(q.cx() - p.cx()) < 450 && Math.random() < .75; q.setMode('look');
+        });
       });
       // 相遇：任兩隻走到一起即觸發
       for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) this.interact(ps[i], ps[j]);
       this.raf = requestAnimationFrame(this.loop);
     }
     interact(a, b) {
-      const close = Math.abs((a.x + a.w / 2) - (b.x + b.w / 2)) < (a.w + b.w) * .45;
-      const walking = p => p.mode === 'walk' || p.mode === 'run';
+      const close = Math.abs(a.cx() - b.cx()) < (a.w + b.w) * .45;
+      const walking = p => (p.mode === 'walk' || p.mode === 'run') && p.goal == null && !p.edgeOK;
       if (close && walking(a) && walking(b) && a.meetCool <= 0 && b.meetCool <= 0) {
         const dur = rand(2.5, 4);
         a.target = b; b.target = a;
         a.setMode('meet', dur); b.setMode('meet', dur); a.touch(); b.touch();
-        const mx = (a.x + a.w / 2 + b.x + b.w / 2) / 2, my = Math.min(a.y, b.y) + 10;
+        const mx = (a.cx() + b.cx()) / 2, my = Math.min(a.y, b.y) + 10;
         this.fx('閃光', mx, my);
         setTimeout(() => this.fx('閃光', mx + 14, my + 18), 350);
       }
+    }
+    /* 呵欠傳染：附近的角色可能跟著打呵欠 */
+    contagion(src) {
+      const p = this.slot === 'night' || this.slot === 'late' ? .7 : .4;
+      this.pets.forEach(q => {
+        if (q === src || !q.free() || Math.abs(q.cx() - src.cx()) > 350 || Math.random() > p) return;
+        setTimeout(() => { if (q.free()) q.tiredAct('yawn', false); }, rand(700, 1500));
+      });
+    }
+    /* 一起睡：同作品的角色睡著時，醒著的同伴可能走過去睡在旁邊 */
+    onSleep(a) {
+      const chance = this.slot === 'night' || this.slot === 'late' ? .6 : .25;
+      const b = this.pets.find(q => q !== a && sameGroup(a, q) && q.free());
+      if (!b || Math.random() > chance) return;
+      const side = b.cx() < a.cx() ? -1 : 1;
+      b.goTo(a.x + side * a.w * .7, 'walk', () => {
+        if (a.mode === 'sleep') { b.dir = a.x > b.x ? 1 : -1; b.sleepNow(false); }
+        else b.setMode('stand', 1.5);
+      });
+    }
+    /* 疊在一起：往下掉時碰到別人的頭，彈開並嚇對方一跳 */
+    bonk(p) {
+      const q = this.pets.find(q => q !== p && !['drag', 'fall'].includes(q.mode) &&
+        Math.abs(q.cx() - p.cx()) < q.w * .45 && p.y + p.h >= q.y + q.h * .15 && p.y + p.h <= q.y + q.h * .6);
+      if (!q) return;
+      p.bonked = true; p.vy = -520; p.vx = (p.cx() < q.cx() ? -1 : 1) * 260;
+      q.touch(); q.edgeOK = false;
+      q.setMode('stand', .6, 'startle');
+      this.fx('驚嘆號', q.cx(), q.y + 4);
+      q.next = () => { q.dir = p.cx() < q.cx() ? 1 : -1; q.setMode('run', rand(1.2, 1.8)); };
+    }
+    /* 列隊散步：三隻以上時，極偶爾排成一列走一段 */
+    parade() {
+      const ps = this.pets;
+      if (ps.length < 3 || !ps.every(p => p.free())) return;
+      const order = [...ps].sort(() => Math.random() - .5);
+      order[0].setMode('walk', 18);
+      for (let i = 1; i < order.length; i++) order[i].follow(order[i - 1], 18);
+    }
+    mealTime() { const d = new Date(); return MEAL_HOURS.includes(d.getHours()); }
+    /* 吃飯提醒：吃飯時間內第一次看到桌寵時，最近畫面中央的角色跑過來提醒 */
+    mealCheck() {
+      if (!this.pets.length || !this.mealTime() || document.visibilityState !== 'visible') return;
+      const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}-${d.getHours()}`;
+      Promise.resolve(this.once(key)).then(first => { if (first) this.mealCall(); }).catch(() => {});
+    }
+    mealCall() {
+      const W = global.innerWidth;
+      const ps = this.pets.filter(p => !['drag', 'fall'].includes(p.mode));
+      if (!ps.length) return;
+      const p = ps.reduce((a, b) => Math.abs(a.cx() - W / 2) <= Math.abs(b.cx() - W / 2) ? a : b);
+      p.wake(); p.touch(); p.edgeOK = false;
+      p.goTo(W / 2 - p.w / 2, 'run', () => {
+        p.setMode('stand', 2.4, 'startle');
+        this.fx('🍚❓', p.cx(), p.y - 6, 'hold');
+        p.next = () => p.munch(5);
+      });
     }
   }
 
