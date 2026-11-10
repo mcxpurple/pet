@@ -1,6 +1,9 @@
-# 角色名冊｜規格書 v0.4
+# 角色名冊｜規格書 v0.7
 # size 為相對大小，120 為 1 倍；實際顯示高度依玩家選的小中大換算
-# 未填欄位套用預設值：size 120｜speed 中｜sleep_after 60｜effect_click 愛心｜effect_sleep zzz｜extras 無
+# 未填欄位套用預設值：size 120｜speed 中｜sleep_after 60｜effect_click 愛心｜effect_sleep zzz｜extras 無｜walk_fx 無｜BD 無｜BD_fx 無
+# effect_click 可填 愛心｜音符｜驚嘆號｜無，或 emoji 陣列（每次隨機一個）
+# walk_fx：散步時每 10–20 秒冒一個的 emoji 陣列
+# BD："MM-DD"，請加引號；當天散步時飄慶生 emoji，BD_fx 為角色專屬加料；"02-29" 只在閏年慶祝
 # 選角畫面依 group 分組，作品順序依本檔出現順序
 
 - id: shiyoujing
@@ -9,7 +12,10 @@
   images: [idle, sleep, click, drag, walk]
   extras: [sit, read, eat, think, drink, polish]
   speed: 慢
-  effect_click: 無
+  effect_click: ["☕", "👓", "💐"]
+  walk_fx: ["☕"]
+  BD: "09-07"
+  BD_fx: ["🍡", "🍓", "🍦"]
   drag_mood: 微皺眉帶困擾，單手推正眼鏡，努力維持鎮定
 
 - id: yanluoxin
@@ -20,7 +26,10 @@
   size: 120
   speed: 慢
   sleep_after: 60
-  effect_click: 音符
+  effect_click: ["🎻", "🍒", "🎵"]
+  walk_fx: ["🎵", "🎶"]
+  BD: "02-29"
+  BD_fx: ["🍒", "🍉", "🥭", "🍇", "🍫"]
   effect_sleep: zzz
   drag_mood: 委屈苦笑，雙手抓著衣襟
 
@@ -32,7 +41,10 @@
   size: 137
   speed: 中
   sleep_after: 60
-  effect_click: 驚嘆號
+  effect_click: ["🌶️", "💢", "🦊"]
+  walk_fx: ["🦊"]
+  BD: "08-30"
+  BD_fx: ["🌶️", "🏮"]
   effect_sleep: zzz
   drag_mood: 皺眉回頭瞪人，狐耳後壓，狐尾炸毛蓬起
 
@@ -44,7 +56,10 @@
   size: 140
   speed: 慢
   sleep_after: 60
-  effect_click: 愛心
+  effect_click: ["🎐", "🍬", "🌸"]
+  walk_fx: ["🎐"]
+  BD: "08-30"
+  BD_fx: ["🍬", "🍯", "🍑", "🏮"]
   effect_sleep: zzz
   drag_mood: 抱緊狐尾縮成一團，狐耳後壓，輕皺眉
 
@@ -56,7 +71,10 @@
   size: 120
   speed: 快
   sleep_after: 60
-  effect_click: 驚嘆號
+  effect_click: ["🥊", "💢", "☕"]
+  walk_fx: ["🎧"]
+  BD: "01-16"
+  BD_fx: ["🧁", "🥐"]
   effect_sleep: zzz
   drag_mood: 咬牙露虎牙，雙拳亂揮掙扎
 
@@ -68,7 +86,10 @@
   size: 120
   speed: 中
   sleep_after: 60
-  effect_click: 愛心
+  effect_click: ["🍷", "🕶️", "☕"]
+  walk_fx: ["🕶️"]
+  BD: "02-01"
+  BD_fx: ["🍷", "🍾", "🍇"]
   effect_sleep: zzz
   drag_mood: 雙手攤開聳肩，挑眉從容微笑
 
@@ -80,7 +101,10 @@
   size: 120
   speed: 中
   sleep_after: 60
-  effect_click: 驚嘆號
+  effect_click: ["📐", "🌿", "✏️"]
+  walk_fx: ["🍃"]
+  BD: "01-01"
+  BD_fx: ["🍍", "🍤", "🌿"]
   effect_sleep: zzz
   drag_mood: 無奈嘆氣，單手扶額
 
@@ -92,7 +116,10 @@
   size: 120
   speed: 慢
   sleep_after: 60
-  effect_click: 愛心
+  effect_click: ["🍒", "🕶️", "📱"]
+  walk_fx: ["📱"]
+  BD: "10-09"
+  BD_fx: ["🍒", "🍅", "🍾"]
   effect_sleep: zzz
   drag_mood: 毫不慌張，單手整理袖口，半垂著眼慵懶微笑
 
@@ -104,7 +131,10 @@
   size: 120
   speed: 快
   sleep_after: 60
-  effect_click: 驚嘆號
+  effect_click: ["🔥", "🦊", "🌶️"]
+  walk_fx: ["🔥"]
+  BD: "08-30"
+  BD_fx: ["🌶️", "🎸", "🔥"]
   effect_sleep: zzz
   drag_mood: 雙手抱胸，皺眉回頭瞪人，一臉不爽
 
@@ -116,6 +146,9 @@
   size: 120
   speed: 慢
   sleep_after: 60
-  effect_click: 音符
+  effect_click: ["❄️", "🐾", "🌙"]
+  walk_fx: ["🎵"]
+  BD: "08-30"
+  BD_fx: ["🍬", "🍰", "🌙"]
   effect_sleep: zzz
   drag_mood: 安靜縮肩，雙手抓住背心下襬，無奈垂眼

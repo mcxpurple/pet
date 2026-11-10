@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Q版桌寵</title>
-<link rel="stylesheet" href="vh-ui.css?v=0.6">
+<link rel="stylesheet" href="vh-ui.css?v=0.7">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-<script src="pet-engine.js?v=0.6"></script>
-<script src="pet-picker.js?v=0.6"></script>
+<script src="pet-engine.js?v=0.7"></script>
+<script src="pet-picker.js?v=0.7"></script>
 <style>
   /* 背景依時段切換，與 VH 相同：late 00–06 窗台月亮｜day 06–16 森林鐵軌｜dusk 16–19 海邊傍晚｜night 19–24 棧橋星空
      --bg-img 由下方 applyBg() 設定；深淺色只決定霧的顏色 */
@@ -62,7 +62,7 @@
       <div class="fd-tabs"><span class="on">選擇角色</span></div>
       <div class="fd-body">
         <h2>選擇桌寵</h2>
-        <p>先選作品，再點照片選取，最多四隻。</p>
+        <p>先選作品，再點照片選取，最多四隻。<br>散步時雙擊空白處叫角色過來，滑鼠在頭上來回能摸摸牠。</p>
         <div class="vsel"><select id="group" aria-label="作品"></select></div>
       </div>
     </div>
@@ -122,6 +122,11 @@
   }
   $('go').onclick = () => { if (ui.pick.length) start(ui.pick); };
   $('switch').onclick = openPicker;
+  // 雙擊空白處：叫最近的角色過來
+  document.addEventListener('dblclick', e => {
+    if (!$('picker').hidden || e.target.closest('header, .qpet, #picker')) return;
+    world.callTo(e.clientX);
+  });
 
   if (!roster.length) { document.body.insertAdjacentHTML('beforeend', '<div id="loading">名冊中沒有可用角色</div>'); return; }
   if (current.length) start(current); else openPicker();
