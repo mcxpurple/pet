@@ -83,3 +83,15 @@
   effect_click: 驚嘆號
   effect_sleep: zzz
   drag_mood: 無奈嘆氣，單手扶額
+
+- id: shaoyuquan
+  name: 邵昱駩
+  group: 暗湧暖域
+  images: [idle, sleep, click, drag, walk]
+  extras: [cherry, coffee, phone, watch, sunglasses, heart, yawn, stretch]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: 愛心
+  effect_sleep: zzz
+  drag_mood: 毫不慌張，單手整理袖口，半垂著眼慵懶微笑
