@@ -88,7 +88,7 @@
   name: 邵昱駩
   group: 暗湧暖域
   images: [idle, sleep, click, drag, walk]
-  extras: [cherry, coffee, phone, watch, sunglasses, heart, yawn, stretch]
+  extras: [sit, cherry, coffee, phone, watch, sunglasses, heart, yawn, stretch]
   size: 120
   speed: 慢
   sleep_after: 60
