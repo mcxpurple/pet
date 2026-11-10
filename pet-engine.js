@@ -286,5 +286,29 @@
     return [state, ...Array.from({ length: max }, (_, k) => `${state}_${k + 1}`)];
   }
 
-  global.QPet = { World, normalize, variantNames, SIZES: Object.keys(SIZE_PCT) };
+  /* 讀取名冊與圖片清單 files.json，回傳可用角色；base：網頁版 ''，擴充功能填完整網址
+     清單裡沒有的角色才逐一確認圖片是否存在 */
+  async function loadRoster(base) {
+    const [text, manifest] = await Promise.all([
+      fetch(base + 'roster.yaml', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error('roster ' + r.status); return r.text(); }),
+      fetch(base + 'files.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    ]);
+    const raw = global.jsyaml.load(text) || [];
+    const exists = url => fetch(url, { method: 'HEAD', cache: 'no-cache' }).then(r => r.ok).catch(() => false);
+    const list = [];
+    for (const r of raw) {
+      const c = normalize(r); c.sets = {};
+      const files = manifest && manifest[c.id];
+      for (const s of c.states) {
+        const urls = variantNames(s).map(n => `${base}pets/${c.id}/${n}.png`);
+        if (files) c.sets[s] = urls.filter(u => files.includes(u.slice(u.lastIndexOf('/') + 1)));
+        else { const ok = await Promise.all(urls.map(exists)); c.sets[s] = urls.filter((_, i) => ok[i]); }
+      }
+      c.thumb = c.sets.idle[0];
+      if (c.sets.idle.length) list.push(c);
+    }
+    return list;
+  }
+
+  global.QPet = { World, normalize, variantNames, loadRoster, SIZES: Object.keys(SIZE_PCT) };
 })(typeof window !== 'undefined' ? window : globalThis);

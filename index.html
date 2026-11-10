@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Q版桌寵</title>
-<link rel="stylesheet" href="vh-ui.css?v=0.5">
+<link rel="stylesheet" href="vh-ui.css?v=0.6">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-<script src="pet-engine.js?v=0.5"></script>
-<script src="pet-picker.js?v=0.5"></script>
+<script src="pet-engine.js?v=0.6"></script>
+<script src="pet-picker.js?v=0.6"></script>
 <style>
   /* 背景依時段切換，與 VH 相同：late 00–06 窗台月亮｜day 06–16 森林鐵軌｜dusk 16–19 海邊傍晚｜night 19–24 棧橋星空
      --bg-img 由下方 applyBg() 設定；深淺色只決定霧的顏色 */
@@ -85,22 +85,11 @@
     get() { try { return JSON.parse(localStorage.getItem('pet_pick')) || []; } catch { return []; } },
     set(v) { try { localStorage.setItem('pet_pick', JSON.stringify(v)); } catch {} }
   };
-  const exists = url => fetch(url, { method: 'HEAD', cache: 'no-cache' }).then(r => r.ok).catch(() => false);
   const bitmap = url => fetch(url).then(r => r.blob()).then(b => createImageBitmap(b));
 
   let roster;
   try {
-    const raw = jsyaml.load(await (await fetch('roster.yaml', { cache: 'no-cache' })).text()) || [];
-    roster = (await Promise.all(raw.map(async r => {
-      const c = QPet.normalize(r); c.sets = {};
-      await Promise.all(c.states.map(async s => {
-        const urls = QPet.variantNames(s).map(n => `pets/${c.id}/${n}.png`);
-        const ok = await Promise.all(urls.map(exists));
-        c.sets[s] = urls.filter((_, i) => ok[i]);
-      }));
-      c.thumb = c.sets.idle[0];
-      return c.sets.idle.length ? c : null;
-    }))).filter(Boolean);
+    roster = await QPet.loadRoster('');
   } catch (e) { $('loading').textContent = '角色名冊讀取失敗'; console.error(e); return; }
   $('loading').remove();
 
