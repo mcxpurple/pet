@@ -35,6 +35,20 @@
   BD_fx: ["🍒", "🍉", "🥭", "🍇", "🍫"]
   effect_sleep: zzz
 
+- id: shiyouze
+  name: 時宥澤
+  group: 星座彼氏
+  images: [idle, sleep, click, drag, walk]
+  extras: [sit, read, umbrella, coffee, eat, phone, think, stretch, yawn, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["☕", "📖", "☂️"]
+  walk_fx: ["🌿"]
+  BD: "11-11"
+  BD_fx: ["☕", "🍚", "🫧"]
+  effect_sleep: zzz
+
 - id: qixin
   name: 麒炘
   group: 玄曙錄
