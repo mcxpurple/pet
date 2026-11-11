@@ -133,6 +133,20 @@
   BD_fx: ["🍒", "🍅", "🍾"]
   effect_sleep: zzz
 
+- id: tonghuaiheng
+  name: 佟淮蘅
+  group: 暗湧暖域
+  images: [idle, sleep, click, drag, walk]
+  extras: [sit, listen, hug, eat, phone, wave, stretch, yawn, heart]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: ["💕", "🍸", "🌹"]
+  walk_fx: ["💕"]
+  BD: "03-12"
+  BD_fx: ["🍤", "🍇", "🍸"]
+  effect_sleep: zzz
+
 - id: rex
   name: Rex
   group: LUMNYX
