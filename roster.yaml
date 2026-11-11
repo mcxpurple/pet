@@ -105,6 +105,20 @@
   BD_fx: ["🍷", "🍾", "🍇"]
   effect_sleep: zzz
 
+- id: makabe
+  name: 真壁郁
+  group: 單人角
+  images: [idle, sleep, click, drag, walk]
+  extras: [sit, gummy, think, karate, cook, craft, stretch, yawn, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🐻", "🌸", "🐉"]
+  walk_fx: ["🌸"]
+  BD: "12-07"
+  BD_fx: ["🍝", "🐻", "🥃"]
+  effect_sleep: zzz
+
 - id: peisiyuan
   name: 裴思垣
   group: 那日花未落
