@@ -1,3 +1,9 @@
+/*
+ * Violet Hour 紫夜星光｜Q版桌寵
+ * © 2026 mcx_purple. All rights reserved.
+ * 保留所有權利，未經同意請勿複製、修改或用於其他專案。
+ * https://www.threads.com/@mcx_purple
+ */
 /* 選角元件｜網頁版與擴充功能共用
    QPet.picker({ select, grid, picked, roster, pick, onChange, max }) */
 (function (global) {
