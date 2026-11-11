@@ -109,7 +109,7 @@
   name: 真壁郁
   group: 單人角
   images: [idle, sleep, click, drag, walk]
-  extras: [sit, gummy, think, karate, cook, craft, stretch, yawn, heart]
+  extras: [sit, gummy, think, karate, cook, craft, stretch, yawn, heart, bow]
   size: 120
   speed: 中
   sleep_after: 60
