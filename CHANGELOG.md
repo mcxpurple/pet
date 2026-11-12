@@ -170,3 +170,11 @@
 - 修改前備份：[backup/pre-size-popup-layer-fix-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-size-popup-layer-fix-20261112)。
 - **個別還原**：在 GitHub Revert 本次 PR（只影響選單層級及相關快取），不需要回復第二批其他功能。明天 Claude 同步擴充功能時，若引入個別大小 UI，應一併同步此 `pet-picker.js` portal 修正；它依賴網頁的 `#picker` 上層與 `notebook-ui.css` 樣式，未啟用時不影響共用引擎。
 
+
+## 2026-11-12｜摸頭操作提示補充（僅網頁文字）
+
+- 玩家已實際成功觸發摸頭，但原本介面「滑鼠在頭上來回能摸摸牠」不夠具體。
+- `index.html`：選角說明改成清楚標示「雙擊空白處呼喚」、「按住角色拖曳」及「不用按滑鼠，在角色頭部快速左右來回刷動約 3 次」；保留最多四隻等原資訊。
+- 不變：`pet-engine.js` 摸頭判定（900ms 內至少三次方向折返）、`pet-picker.js`、全部 CSS、角色素材、`pet-extension.zip`、`version.json`、`install.html`。
+- 備份：[`backup/pre-headpat-help-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-headpat-help-20261112)；只需 Revert 本次說明 PR 即可單獨還原。
+- 交接 Claude：明天若同步擴充功能的選角頁，請一併補上相同的摸頭操作提示；這次不修改 ZIP。
