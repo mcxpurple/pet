@@ -48,3 +48,29 @@
 - `index.html`：網頁季節腳本快取參數從 `?v=1` 改為 `?v=2`，確保載入更新後的動畫。
 - 保持不變：粒子上限、出現頻率、起始位置、Chrome 下載 ZIP、`version.json`、角色引擎與角色素材。
 - 單獨還原本次高度調整：把 `--dy` 的範圍改回舊值，並將網頁季節腳本快取參數更新；也可 Revert 本次兩個程式提交。
+
+## 2026-11-12｜第二批前置：網頁版收藏手帳 UI（GPT-6）
+
+> 此提交**只有選角畫面美術改版**，不是第二批角色功能上線。使用者在定稿時指定：刪除左側紫色格紋紙膠帶，金色活頁扣要從上到下整排；保留上方資料夾與既有互動。
+
+### 更動範圍
+- `index.html`（選角區外觀 DOM）：在 `#picker` 增加 `.nb-book` 版面容器、左側九個金色活頁扣、右側分頁／書籤、貓郵戳與頁面底部的向量花枝／貓圖案；選角互動的 JavaScript 完全不變；新增 `notebook-ui.css?v=1` 連結。
+- `notebook-ui.css`（新檔）：僅用 `#picker` 範圍的 CSS 覆蓋既有 `vh-ui.css` 樣式；奶油紙張、霧紫封皮、拍立得、方格底、已選色標、全域大小切換、票券式開始散步、390px 手機版排版，以及 focus 可見狀態。
+- **沒有修改** `pet-engine.js`、`pet-picker.js`、`vh-ui.css`、`seasonal-micro-scene.js`、`seasonal-micro-scene.css`、`pet-extension.zip`、`version.json`、`install.html`、`roster.yaml`、`files.json`、`pets/`。
+
+### 備份與安全還原
+- 本批開始前 main 提交：`5fb8bb7bb180ddb5e116a0dd6c5cd097a1d19dfb`。
+- 備份分支：[backup/pre-web-batch2-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-web-batch2-20261112)。
+- 開發分支：`feature/web-batch2-notebook-ui`。
+- 合併後如要撤銷整個 UI，**只 Revert 本次 UI 的 GitHub PR / 合併提交**，不要 Reset 整個 main（避免遺失之後角色素材及變更）。
+- 若手動還原，`index.html` 必須同時移除 `notebook-ui.css` 的引用及 `nb-*` 包裝／裝飾元素；僅移除 CSS 連結不等於完整回復舊版。
+- 原樣下載的 Chrome ZIP 保留作為使用者指定的舊版回退基準。
+
+### 交接給 Claude
+- 這次僅改網頁美術；擴充功能仍使用舊 UI 的副本，**未重新打包**。
+- 所有新 CSS 都在 `notebook-ui.css`，不要直接覆蓋共用的 `vh-ui.css`，除非明天確認要同步擴充功能。
+- 未完成的第二批功能：秋季楓葉 SVG 與粒子圖層、偷看滑鼠、歡迎回來、每隻角色各自大小（包含拍立得旁的「⋯」浮層）。
+- 其餘預留由 Claude 處理：被捲動嚇到、一鍵隱藏、指定網站不出現、擴充功能同步與 ZIP 重打包。
+- **特別注意**：個別大小的「⋯」按鈕本次沒有做成空殼，之後應與功能一起上線；浮層由拍立得旁向下展開。
+- 視覺效能：沒有持續性裝飾動畫；所有花枝／貓剪影用內嵌 SVG，沒有外部新素材。
+- 驗收：靜態程式碼與 DOM 結構已比對；真實瀏覽器的手機尺寸與視覺需在網頁部署後人工確認。

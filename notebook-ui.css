@@ -1,0 +1,329 @@
+/*
+ * Violet Hour 紫夜星光｜收藏手帳／活頁選角介面 v1
+ * © 2026 mcx_purple. All rights reserved.
+ * GPT-6, 2026-11-12. Web-only: index.html 載入本檔。
+ * 只改外觀：不更動 QPet 引擎、選角行為或擴充功能。
+ * 視覺來源：使用者確認的奶油紙張、霧紫封皮、全長金色活頁扣、拍立得、票券。
+ * 明確不包含：左側紫色格紋紙膠帶。
+ */
+
+#picker {
+  --nb-ink:#563a38;
+  --nb-muted:#94796f;
+  --nb-gold:#ad7135;
+  --nb-mauve:#8b607a;
+  --nb-plum:#57435f;
+  background:rgba(239,232,230,.32);
+  color-scheme:light; /* 系統夜間模式下，選角紙張和原生下拉仍維持奶油紙本配色 */
+  padding:68px 32px 26px;
+}
+#picker .nb-book {
+  position:relative;
+  isolation:isolate;
+  width:min(590px,100%);
+  max-height:100%;
+  margin:0 auto;
+  color:var(--nb-ink);
+}
+/* 紫色封皮與層疊紙張：固定在頁面外側，滾動時不影響選角互動。 */
+#picker .nb-book::before {
+  content:"";position:absolute;z-index:-2;pointer-events:none;
+  inset:-12px -9px -10px -10px;border-radius:25px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.09) 0 1px,transparent 1px 7px),
+    linear-gradient(140deg,#786083 0%,#51415d 60%,#765c80 100%);
+  border:2px solid #8b7187;
+  box-shadow:inset 0 0 0 4px rgba(247,208,151,.25),0 12px 28px rgba(36,24,42,.30);
+}
+#picker .nb-book::after {
+  content:"";position:absolute;z-index:-1;pointer-events:none;
+  inset:-6px 6px -3px 6px;border-radius:22px;
+  background:#e3c7a8;box-shadow:0 2px 0 #b48463;
+}
+#picker .sheet {
+  position:relative;z-index:1;
+  width:100%;max-height:calc(100dvh - 104px);
+  padding:47px 25px 27px 45px;
+  border:2px solid #bd8e65;border-radius:20px;
+  overflow-x:hidden;overflow-y:auto;
+  background:
+    radial-gradient(circle at 7% 98%,rgba(238,208,175,.23),transparent 27%),
+    repeating-linear-gradient(0deg,rgba(188,143,109,.035) 0 1px,transparent 1px 4px),
+    linear-gradient(115deg,#fff9f0 0%,#fffaf2 50%,#fff7ed 100%);
+  box-shadow:inset 0 0 0 5px rgba(255,255,255,.67),0 4px 0 rgba(68,45,56,.25);
+  color:var(--nb-ink);scrollbar-color:#bca1b9 transparent;
+}
+/* 內頁虛線縫邊，永不攔截滑鼠。 */
+#picker .sheet::before {
+  content:"";position:absolute;inset:9px;border:1px dashed #d2a478;
+  border-radius:13px;pointer-events:none;z-index:0;
+}
+#picker .sheet > * {position:relative;z-index:1;}
+/* 左側金屬活頁扣，從頁首延續至頁尾；不用原圖的格紋紙膠帶。 */
+#picker .nb-rings {
+  position:absolute;top:58px;bottom:44px;left:-22px;
+  z-index:5;width:54px;display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:space-between;
+  pointer-events:none;
+}
+#picker .nb-rings span {
+  display:block;width:52px;height:21px;min-height:15px;
+  border:4px solid #a36f3a;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,251,205,.90) 0%,rgba(250,203,116,.48) 45%,rgba(98,56,31,.22) 100%);
+  box-shadow:
+    inset 0 2px 1px rgba(255,253,231,.9),
+    inset 0 -2px 2px rgba(83,44,24,.36),
+    0 2px 1px rgba(54,32,33,.34),
+    0 0 0 1px #e9bf7c;
+  transform:rotate(-8deg);
+}
+#picker .nb-rings span:nth-child(even) {transform:rotate(6deg);}
+#picker .nb-rings span::after {
+  content:"";display:block;position:relative;left:7px;top:-1px;
+  width:28px;height:3px;border-radius:100%;
+  background:rgba(255,251,222,.70);
+}
+/* 右側分頁與紫金書籤：只裝飾，不是額外可點擊按鈕。 */
+#picker .nb-edge-tabs {
+  position:absolute;right:-18px;top:24%;bottom:10%;width:28px;
+  display:flex;flex-direction:column;justify-content:space-around;
+  pointer-events:none;z-index:0;
+}
+#picker .nb-edge-tabs span {
+  width:31px;height:50px;border:1px solid #bc925f;border-left:0;
+  border-radius:0 9px 9px 0;
+  background:linear-gradient(120deg,#edcf97,#b69ab6);
+  box-shadow:2px 2px 1px rgba(65,45,57,.18);
+}
+#picker .nb-edge-tabs span:nth-child(2n) {background:linear-gradient(120deg,#c1a1c7,#83688c);}
+#picker .nb-bookmark {
+  position:absolute;right:30px;top:-1px;z-index:4;
+  width:40px;height:92px;display:flex;align-items:center;justify-content:center;
+  padding-bottom:15px;pointer-events:none;color:#e4ba79;font-size:26px;
+  background:linear-gradient(100deg,#aa89b2 0%,#74577e 48%,#4e3a62 100%);
+  border:2px solid #d2ab73;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);
+  filter:drop-shadow(1px 2px 2px rgba(57,35,49,.28));
+}
+#picker .nb-bookmark::after {content:"✦";font-size:21px;}
+/* 以資料夾為主導，取消原本整塊金黃色區域，露出紙張書寫感。 */
+#picker .fd-head {position:relative;padding-top:0;margin:0 0 13px;}
+#picker .fd-tabs {
+  position:absolute;top:-46px;left:0;z-index:2;
+  padding-right:0;
+}
+#picker .fd-tabs > .on {
+  padding:8px 21px 9px;border:1px solid #b68f6f;border-bottom:0;
+  border-radius:14px 14px 0 0;
+  background:linear-gradient(110deg,#ffefd7,#f5ddbf);color:#634232;
+  font-size:14px;font-weight:700;box-shadow:0 -2px 0 rgba(171,133,95,.10);
+}
+#picker .fd-tabs > .on::before {content:"✤";font-size:12px;color:#bc8b50;margin-right:7px;}
+#picker .fd-body {
+  position:relative;border:0;border-radius:0;background:transparent;
+  color:var(--nb-ink);padding:0 2px;
+}
+#picker .fd-body h2 {
+  color:#563a38;font-size:24px;font-weight:700;letter-spacing:.075em;margin:0 0 8px;
+  text-shadow:0 1px 0 rgba(255,255,255,.8);
+}
+#picker .fd-body p {
+  color:#83665d;font-size:12.5px;line-height:1.85;max-width:calc(100% - 62px);
+}
+#picker .nb-postmark {
+  position:absolute;right:27px;top:9px;
+  display:flex;align-items:center;pointer-events:none;opacity:.65;
+}
+#picker .nb-postmark .nb-stamp-ring {
+  width:52px;height:52px;border:2px dashed #b88d6c;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  transform:rotate(-11deg);font-size:28px;color:#b28572;
+}
+#picker .nb-postmark .nb-lines {
+  width:32px;height:35px;margin-left:-3px;
+  background:repeating-radial-gradient(ellipse at 0 50%,transparent 0 6px,#b89174 7px 8px,transparent 9px 14px);
+  opacity:.7;
+}
+#picker .vsel {margin-top:16px;}
+#picker .vsel::before {
+  content:"▤";position:absolute;z-index:2;left:12px;top:50%;
+  transform:translateY(-50%);color:#b77c42;pointer-events:none;font-size:18px;
+}
+#picker .vsel select {
+  min-height:46px;padding:10px 42px 10px 40px;
+  background:rgba(255,253,247,.94);color:#5c3b35;
+  border:1px solid #be9878;border-bottom:2px solid #a87967;
+  border-radius:25px;box-shadow:0 3px 0 rgba(177,135,106,.14);
+  font-size:15px;
+}
+#picker .vsel::after {
+  width:21px;height:21px;right:12px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 7 L10 12 L15 7' stroke='%237c5361' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+/* 方格收納區：暖米色方格紙、虛線邊、保留最大四隻的照片格。 */
+#picker .scard {
+  margin:19px 0 0;padding:6px;border:1px solid #cfa67b;
+  border-radius:14px;transform:none;overflow:visible;
+  box-shadow:0 4px 0 rgba(73,49,49,.22),0 5px 12px rgba(93,71,55,.1);
+  background:
+    linear-gradient(90deg,rgba(190,151,109,.17) 1px,transparent 1px),
+    linear-gradient(0deg,rgba(190,151,109,.17) 1px,transparent 1px),
+    linear-gradient(#fff6e7,#fffaef);
+  background-size:17px 17px,17px 17px,auto;
+}
+#picker .scard > .in {
+  position:relative;min-height:165px;padding:16px 15px 15px;
+  border:1px dashed #bf905f;outline:none;border-radius:9px;
+}
+#picker .scard > .in::after {
+  content:"❀";position:absolute;right:10px;bottom:5px;z-index:0;
+  color:#a58aab;font-size:39px;opacity:.6;pointer-events:none;
+}
+#picker .pols {
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;
+  position:relative;z-index:1;min-height:125px;
+}
+#picker .pol {
+  flex:0 0 88px;width:88px;max-width:calc(50% - 6px);
+  padding:5px 5px 10px;border:1px solid #dcc5a8;
+  background:linear-gradient(120deg,#fffaf4,#fffdf8);
+  box-shadow:0 3px 2px rgba(83,56,50,.26);
+  transition:transform .14s,box-shadow .14s;
+}
+#picker .pol:nth-child(3n+1) {transform:rotate(-2deg)}
+#picker .pol:nth-child(3n+2) {transform:rotate(1.5deg)}
+#picker .pol:nth-child(3n) {transform:rotate(-1deg)}
+#picker .pol::before {
+  content:"";position:absolute;z-index:2;pointer-events:none;
+  left:29%;right:29%;top:-9px;height:12px;
+  border-left:1px solid rgba(212,161,98,.28);border-right:1px solid rgba(212,161,98,.28);
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.26) 0 1px,transparent 1px 3px),rgba(237,194,125,.75);
+  transform:rotate(-8deg);box-shadow:0 1px 1px rgba(104,70,52,.12);
+}
+#picker .pol .ph {background:#eee4d6;aspect-ratio:3 / 4;}
+#picker .pol .nm {color:#63443b;font-size:12px;margin-top:5px;line-height:1.3;}
+#picker .pol .seal {
+  background:linear-gradient(160deg,#a0525b,#732f42);border:1px solid #e3bf9d;
+  top:-9px;right:-8px;width:27px;height:27px;z-index:3;
+}
+#picker .pol:focus-visible,#picker .chip:focus-visible,#picker .tk:focus-visible,
+#picker .seg button:focus-visible,#picker select:focus-visible {
+  outline:2px solid #875f94;outline-offset:3px;
+}
+#picker .pol[aria-pressed="true"] {box-shadow:0 3px 2px rgba(83,56,50,.3),0 0 0 1px #dba968;}
+#picker .pol.empty::before {display:none}
+/* 已選角色的色標，保留點選取消功能。 */
+#picker .picked {
+  color:#8a6c66;margin-top:14px;gap:6px;font-size:12px;
+}
+#picker .picked > span:first-child {
+  background:#f1e2da;border-left:2px solid #ac7d87;
+  clip-path:polygon(0 0,100% 0,95% 50%,100% 100%,0 100%);
+  padding:5px 12px 5px 10px;margin-right:3px;color:#724957;
+}
+#picker .chip {
+  border:1px solid #c69b70;background:linear-gradient(#fff9ef,#f3e2cd);
+  color:#633e34;box-shadow:0 1px 0 #d6baa0;
+  padding:4px 10px;font-size:12px;
+}
+#picker .chip b {color:#966746}
+/* 全域大小保留原有位置與行為，做成白紙＋霧紫三段控制。 */
+#picker .size-box {
+  margin-top:19px;padding:12px 14px;
+  border:1px solid #dfb48b;border-radius:15px;
+  background:linear-gradient(130deg,#fbead4,#ffefd9);
+  box-shadow:inset 0 0 0 3px rgba(255,251,242,.65),0 2px 3px rgba(81,57,58,.09);
+}
+#picker .size-box .size {display:flex;gap:13px;margin:0;}
+#picker .size .lb {color:#775349;font-size:14px;letter-spacing:.03em;}
+#picker .seg {
+  border:1px solid #b78b77;border-radius:18px;padding:3px;gap:3px;
+  background:#fffaf4;min-width:0;
+}
+#picker .seg button {
+  color:#66463e;border-radius:14px;font-size:14px;
+  padding:8px 2px;min-width:0;
+}
+#picker .seg button[aria-pressed="true"] {
+  color:#fff8f1;background:linear-gradient(135deg,#ac8399,#885b78);
+  box-shadow:0 1px 3px rgba(68,39,60,.26);
+}
+/* 書籤票券式 CTA；原本 id=go/disabled/onClick 保持不變。 */
+#picker .tk {
+  margin:27px auto 0;position:relative;z-index:2;transform:rotate(-1.8deg);
+  color:#613c40;filter:drop-shadow(0 3px 0 rgba(77,50,58,.26));
+}
+#picker .tk .f {
+  min-width:161px;padding:9px 17px;
+  border:2px dashed #b99169;border-radius:13px 0 0 13px;
+  background:radial-gradient(circle at 100% 0,rgba(187,147,172,.14),transparent 40%),
+    repeating-linear-gradient(0deg,rgba(154,114,97,.04) 0 1px,transparent 1px 4px),#fff5e8;
+}
+#picker .tk .t {font-size:19px;color:#603e43;}
+#picker .tk .en {color:#956c92;}
+#picker .tk .s {
+  background:linear-gradient(125deg,#e6c89d,#bfa2bb);
+  border-radius:0 13px 13px 0;border-left:2px dashed #fff8ec;min-width:49px;
+}
+#picker .tk::before {
+  content:"";pointer-events:none;position:absolute;left:-23px;top:15px;
+  width:22px;height:18px;
+  background:radial-gradient(ellipse at 25% 50%,transparent 34%,#987294 36%,#987294 45%,transparent 47%),
+    radial-gradient(ellipse at 75% 50%,transparent 34%,#987294 36%,#987294 45%,transparent 47%);
+  transform:rotate(14deg);
+}
+/* 花枝與貓剪影是純向量、不能點擊，避開操作區。 */
+#picker .nb-flower {
+  position:absolute!important;left:0;bottom:0;width:98px;height:95px;
+  pointer-events:none;z-index:0!important;opacity:.90;
+}
+#picker .nb-cat {
+  position:absolute!important;right:10px;bottom:4px;width:52px;height:67px;
+  pointer-events:none;z-index:0!important;opacity:.32;
+}
+#picker .install {
+  margin-top:21px;color:#855b94;font-size:12.5px;text-align:center;position:relative;z-index:2;
+}
+#picker .foot {margin-top:9px;color:#9c7a97;font-size:12px;text-align:center;position:relative;z-index:2;}
+@media (max-width:520px) {
+  #picker {padding:53px 21px 15px;}
+  #picker .sheet {max-height:calc(100dvh - 72px);padding:42px 16px 20px 29px;border-radius:17px;}
+  #picker .nb-book::before {inset:-8px -6px -7px -7px;border-radius:20px;}
+  #picker .nb-rings {left:-18px;top:57px;bottom:33px;width:40px;}
+  #picker .nb-rings span {width:37px;height:15px;border-width:3px;}
+  #picker .nb-rings span::after {width:20px;left:4px;top:-2px;}
+  #picker .nb-bookmark {right:12px;width:28px;height:65px;font-size:17px;}
+  #picker .nb-bookmark::after {font-size:17px;}
+  #picker .fd-head {margin-bottom:10px;}
+  #picker .fd-tabs {top:-42px;}
+  #picker .fd-tabs > .on {font-size:12px;padding:7px 15px;}
+  #picker .fd-body h2 {font-size:20px;margin-bottom:6px;}
+  #picker .fd-body p {max-width:calc(100% - 44px);font-size:11.3px;line-height:1.65;}
+  #picker .nb-postmark {right:7px;top:8px;transform:scale(.74);transform-origin:right top;}
+  #picker .vsel {margin-top:12px;}
+  #picker .vsel select {min-height:42px;font-size:13px;}
+  #picker .scard {margin-top:15px;padding:4px;}
+  #picker .scard > .in {padding:15px 11px 12px;min-height:145px;}
+  #picker .pols {gap:11px 9px;}
+  #picker .pol {flex-basis:77px;width:77px;padding:4px 4px 7px;}
+  #picker .pol .nm {font-size:11px;}
+  #picker .picked {margin-top:11px;gap:5px;}
+  #picker .picked > span:first-child {padding:4px 7px;margin-right:0;}
+  #picker .chip {padding:3px 7px;font-size:11px;}
+  #picker .size-box {margin-top:14px;padding:10px 9px;}
+  #picker .size-box .size {gap:7px;}
+  #picker .size .lb {font-size:12px;}
+  #picker .seg button {font-size:12.5px;padding:7px 0;}
+  #picker .tk {margin-top:19px;}
+  #picker .tk .f {padding:7px 13px;min-width:138px;}
+  #picker .tk .t {font-size:16px;}
+  #picker .tk .s {min-width:43px;}
+  #picker .install {margin-top:17px;font-size:11.5px;}
+  #picker .foot {font-size:11px;}
+  #picker .nb-flower {width:68px;height:68px;}
+  #picker .nb-cat {width:39px;height:50px;}
+  #picker .nb-edge-tabs {right:-13px;width:23px;}
+  #picker .nb-edge-tabs span {width:25px;height:35px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  #picker .pol,#picker .tk {transition:none;}
+}
