@@ -420,7 +420,7 @@
           break;
         case 'click':
           bob = -Math.sin(Math.min(this.modeT / (this.has('click') ? .35 : .4), 1) * Math.PI) * (this.has('click') ? 8 : 18);
-          if (this.modeT > this.modeDur) this.setMode('walk', rand(3, 6));
+          if (this.modeT > this.modeDur && !this.done()) this.setMode('walk', rand(3, 6));
           break;
         case 'drag':
           tilt = Math.sin(this.t * 6) * (this.has('drag') ? 3 : 8);
@@ -510,7 +510,17 @@
       this.watchMouse = opts.watchMouse !== false;  // 未指定時預設開啟；擴充功能可 opt-out
       this.mouseThrottleAt = 0; this.mousePoint = null;
       this.once = opts.once || (key => { try { if (localStorage.getItem('pet_meal') === key) return Promise.resolve(false); localStorage.setItem('pet_meal', key); } catch {} return Promise.resolve(true); });
-      document.addEventListener('visibilitychange', () => this.mealCheck());
+      // 回到分頁歡迎：不使用 localStorage；一次隱藏只觸發一次。
+      this.welcome = opts.welcome !== false;
+      this.welcomeAfter = Number.isFinite(opts.welcomeAfter) && opts.welcomeAfter >= 0 ? opts.welcomeAfter : 600;
+      this.awayAt = document.hidden ? Date.now() : 0;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { this.awayAt = Date.now(); return; }
+        const elapsed = this.awayAt ? (Date.now() - this.awayAt) / 1000 : 0;
+        this.awayAt = 0;
+        this.mealCheck(); // 保留原本吃飯提醒行為
+        if (this.welcome && elapsed >= this.welcomeAfter) this.welcomeBack();
+      });
       this.max = opts.max || 2;                         // 同時出現上限：網頁版與擴充功能皆為 4
       const root = stage.getRootNode();
       const style = document.createElement('style'); style.textContent = CSS;
@@ -572,6 +582,45 @@
       if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); setTimeout(() => this.mealCheck(), 2500); }
     }
     clear() { cancelAnimationFrame(this.raf); this.pets.splice(0).forEach(p => p.destroy()); }
+    /* 歡迎回來：每次隱藏超過 welcomeAfter 秒只觸發一次。
+       拖曳、拋出狀態不打斷。睡著先 rouse() 迷糊醒來，再以 next 串到歡迎動作。 */
+    welcomeBack() {
+      if (!this.pets.length || document.hidden) return;
+      const group = [...this.pets];
+      let delay = 0;
+      group.forEach((p, i) => {
+        if (i) delay += rand(300, 800); // 多角色錯開，避免同時衝向中央
+        global.setTimeout(() => {
+          if (document.hidden || !this.pets.includes(p) || ['drag', 'fall'].includes(p.mode)) return;
+          const greet = () => {
+            if (!this.pets.includes(p) || document.hidden || ['drag', 'fall'].includes(p.mode)) return;
+            this.welcomePet(p, i, group.length, group);
+          };
+          if (p.mode === 'sleep') {
+            p.rouse();               // 迷糊醒來約兩秒
+            p.next = greet;          // 原本 rouse() 的疲倦後續讓位給歡迎
+          } else greet();
+        }, delay);
+      });
+    }
+    welcomePet(p, index, total, group) {
+      const W = global.innerWidth;
+      const widest = Math.max(...group.map(q => q.w));
+      const gap = total > 1 ? Math.min(Math.max(72, widest * 1.08), Math.max(0, (W - widest - 8) / (total - 1))) : 0;
+      const center = W / 2 + (index - (total - 1) / 2) * gap;
+      const destination = Math.min(Math.max(0, center - p.w / 2), Math.max(0, W - p.w));
+      p.touch(); p.edgeOK = false; p.meetCool = Math.max(p.meetCool, 12);
+      const arrive = () => {
+        if (!this.pets.includes(p) || document.hidden) return;
+        p.dir = p.cx() < W / 2 ? 1 : -1; // 依現有左右朝向素材，朝畫面中央
+        p.touch();
+        this.fx('愛心', p.cx(), p.y + 4);
+        p.setMode(p.has('wave') ? 'wave' : 'click', 1.5);
+        p.next = () => p.setMode('stand', rand(1.5, 2.3));
+      };
+      if (Math.abs(p.x - destination) < 9) arrive();
+      else p.goTo(destination, 'run', arrive);
+    }
     /* 叫過來：離 clientX 最近、沒被拖著的角色小跑步過去 */
     callTo(clientX) {
       const ps = this.pets.filter(p => !['drag', 'fall'].includes(p.mode));
