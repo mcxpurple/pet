@@ -152,7 +152,7 @@
           popup.classList.add('is-portal');
           portalHost.appendChild(popup);
           activePopup = popup;
-          activeAnchor = more;
+          activeAnchor = slot.querySelector('.pol-more');
           placePopup();
         } else if (popup && slot.getBoundingClientRect().left + 190 > o.grid.getBoundingClientRect().right) {
           popup.classList.add('align-right');
