@@ -93,8 +93,12 @@
     el.style.setProperty('--duration', duration + 'ms');
     el.style.setProperty('--peak-opacity', random(.52, .83).toFixed(2));
     el.style.setProperty('--dx', random(-42, 42).toFixed(1) + 'px');
-    // 2026-11-12 微調：從腳邊向上飄至角色身體周圍，仍不從畫面頂端落下。
-    el.style.setProperty('--dy', (-random(type === 'firefly' ? 45 : 65, type === 'firefly' ? 85 : 110)).toFixed(1) + 'px');
+    // 向上飄升距離也跟著角色實際高度變化；「大」角色可到頭部附近，而不是只到肩膀。
+    // 以角色腳邊為起點，仍不從畫面頂端掉落；小角色保留接近舊版的飄散幅度。
+    const rise = type === 'firefly'
+      ? Math.min(185, Math.max(45, petHeight * random(.375, .71)))
+      : Math.min(235, Math.max(65, petHeight * random(.55, .95)));
+    el.style.setProperty('--dy', (-rise).toFixed(1) + 'px');
     el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
     // DOM 順序與 z-index 雙重保護：粒子在角色後方，不遮住角色。
     stage.insertBefore(el, stage.firstChild);
