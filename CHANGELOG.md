@@ -1,3 +1,16 @@
+## 2026-11-12｜頁首「選擇角色」灰紫膠囊與「陪伴桌寵」標題（僅網頁）
+
+依玩家從實際 CSS 原型選定的款式，將網頁散步模式頂部原本的「換角色」紙膠帶按鈕，換成灰紫色圓角膠囊「🐾 選擇角色」，維持原本點擊後開啟選角畫面的功能。這是**真實 CSS 樣式，不是以示意圖或背景圖片代替互動按鈕**。
+
+- `index.html`：頁首小字 `Q版桌寵` → `陪伴桌寵`；瀏覽器頁籤標題同步改為 `陪伴桌寵`。僅將 `#switch` 的字樣與類別改成 `pet-switch-pill`，子元素為 🐾 emoji 及「選擇角色」，保留原 `id="switch"`、`hidden` 和點擊事件 `$('switch').onclick = openPicker`。移除只為舊紙膠帶使用的 header 定位覆寫。
+- `notebook-ui.css`：以網頁限定 `.vh header .pet-switch-pill` 加入已選定的灰紫漸層、奶白字、圓角、淺色外框、立體陰影及小尺寸 paw emoji；保留 focus／active 操作，窄螢幕略縮減內距。
+- `index.html` 快取只將 `notebook-ui.css?v=5` 提升至 `?v=6`。
+- **明確不修改「開始散步」**：`#go.tk` 的 HTML、文字 `開始散步 / let's walk`、圖案 🐾、CSS、尺寸和動畫皆保持原樣。也不修改選角功能、大小選單、角色引擎、四季微景、素材、Chrome ZIP 或版本號。
+- 施工前備份：[`backup/pre-select-character-pill-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-select-character-pill-20261112)，基準 `main` SHA `df6b9e2e17e0ba170cc0a4874a7e731fac8d884f`。還原時 Revert 本次 PR 即可；勿 Reset 整個 main。
+- GitHub 靜態檢查／差異比對後上線；真實頁面顯示與窄螢幕仍須用瀏覽器確認。
+
+---
+
 ## 2026-11-12｜個別大小狀態顯示於拍立得膠囊（僅網頁版）
 
 依玩家需求，已選角色拍立得右下角原本固定的「⋯」現在會顯示個別大小設定：
