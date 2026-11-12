@@ -111,6 +111,7 @@
       this.frameT = FRAME[cfg.speed] || FRAME['中'];
       this.t = 0; this.modeT = 0; this.phase = 0; this.meetCool = 0; this.fxT = 0;
       this.vx = 0; this.peekCool = rand(8, 20); this.edgeOK = false; this.goal = null; this.lead = null; this.next = null;
+      this.mouseLookReadyAt = 0;  // 偷看滑鼠：每隻角色獨立冷卻（毫秒時間戳）
       this.lastTouch = performance.now();
       this.el = document.createElement('div'); this.el.className = 'qpet';
       this.cv = document.createElement('canvas');
@@ -506,6 +507,8 @@
     constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
       this.slot = slotNow(); this.slotT = 0; this.fest = festNow();
+      this.watchMouse = opts.watchMouse !== false;  // 未指定時預設開啟；擴充功能可 opt-out
+      this.mouseThrottleAt = 0; this.mousePoint = null;
       this.once = opts.once || (key => { try { if (localStorage.getItem('pet_meal') === key) return Promise.resolve(false); localStorage.setItem('pet_meal', key); } catch {} return Promise.resolve(true); });
       document.addEventListener('visibilitychange', () => this.mealCheck());
       this.max = opts.max || 2;                         // 同時出現上限：網頁版與擴充功能皆為 4
@@ -515,10 +518,34 @@
       this.loop = this.loop.bind(this);
       this.onResize = () => this.pets.forEach(p => p.resize());
       global.addEventListener('resize', this.onResize);
+      if (this.watchMouse) {
+        this.onPointerMove = e => this.watchPointer(e);
+        document.addEventListener('pointermove', this.onPointerMove, { passive: true });
+      }
     }
     setSize(mode) {
       this.size = SIZE_PCT[mode] ? mode : '中';
       this.pets.forEach(p => p.resize());
+    }
+    /* 偷看滑鼠：只收 document pointermove，100ms 節流；不影響拖曳、睡覺與帶目標移動。
+       滑鼠位置只存在記憶體，不寫入 localStorage。opts.watchMouse=false 可完全停用。 */
+    watchPointer(e) {
+      if (e.pointerType === 'touch' || document.hidden || !this.pets.length) return;
+      const now = performance.now();
+      if (now - this.mouseThrottleAt < 100) return;
+      this.mouseThrottleAt = now;
+      this.mousePoint = { x: e.clientX, y: e.clientY, at: now };
+      if (now - this.mousePoint.at > 1500 || this.pets.some(p => p.mode === 'drag' || p.mode === 'fall')) return;
+      this.pets.forEach(p => {
+        if (now < p.mouseLookReadyAt || Math.abs(p.cx() - this.mousePoint.x) > 250) return;
+        if (p.goal != null || p.edgeOK || p.lead || p.pose || p.v > 4 && p.mode !== 'walk') return;
+        if (p.mode !== 'stand' && p.mode !== 'walk') return; // 排除 sleep / peek / follow / click 等動畫
+        p.mouseLookReadyAt = now + rand(6000, 12000);
+        if (p.mode === 'walk' && Math.random() >= .20) return; // 80% 機率照常散步
+        p.setMode('stand', rand(1, 2), 'watch');
+        p.dir = this.mousePoint.x >= p.cx() ? 1 : -1;
+        if (Math.random() < .30) this.fx(pick(['音符', '驚嘆號']), p.cx(), p.y + 5);
+      });
     }
     /* 特效：kind 可為 '愛心'｜'音符'｜'驚嘆號'｜'閃光'｜'zzz'｜任意 emoji｜上述的陣列（隨機取一個） */
     fx(kind, x, y, drift) {
