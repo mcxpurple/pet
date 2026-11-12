@@ -217,7 +217,9 @@
     }
 
     const x = Math.max(14, Math.min(width - 14, rect.left + rect.width * random(.17, .83)));
-    const y = Math.max(height - BOTTOM_ZONE, Math.min(height - 6, rect.bottom - random(8, 20)));
+    const y = ground
+      ? Math.max(height - BOTTOM_ZONE, Math.min(height - size - 4, rect.bottom - size - random(2, 8)))
+      : Math.max(height - BOTTOM_ZONE, Math.min(height - 6, rect.bottom - random(8, 20)));
     const duration = random(PARTICLE_MIN_MS, PARTICLE_MAX_MS);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
@@ -430,6 +432,7 @@
     let startedWalking = false;
     let visibleMs = 0;
     let lastSample = performance.now();
+    let wasVisible = !document.hidden;
     let nextDrawAt = ANIMAL_FIRST_DELAY_MS;
     const animalQueue = [];
     let forcedShown = false;
@@ -444,8 +447,9 @@
 
     function animalTick() {
       const now = performance.now();
-      if (startedWalking && !document.hidden) visibleMs += Math.max(0, now - lastSample);
+      if (startedWalking && wasVisible) visibleMs += Math.max(0, now - lastSample);
       lastSample = now;
+      wasVisible = !document.hidden;
       if (!startedWalking) {
         const picker = document.getElementById('picker');
         if (stage.querySelector('.qpet') && (!picker || picker.hidden) && !document.hidden) {
@@ -492,7 +496,10 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-      lastSample = performance.now(); // visibilitychange 中斷前後時間不計入。
+      const now = performance.now();
+      if (startedWalking && wasVisible) visibleMs += Math.max(0, now - lastSample);
+      lastSample = now;
+      wasVisible = !document.hidden;
       pauseAnimalIfHidden(document.hidden);
       if (document.hidden) clearParticles();
     });
