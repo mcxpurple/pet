@@ -1,7 +1,7 @@
 /*
- * Violet Hour 紫夜星光｜網頁版季節水彩微景（2026-11-12，GPT-6）
+ * Violet Hour 紫夜星光｜季節水彩微景（網頁版）
  * © 2026 mcx_purple. All rights reserved.
- * 僅由網頁版 index.html 載入；不修改 pet-engine.js 或擴充功能。
+ * 由 index.html 載入，與 pet-engine.js 分離；擴充功能版為 pet-extension/seasonal.js（同一份邏輯移植）。
  */
 (function () {
   'use strict';
