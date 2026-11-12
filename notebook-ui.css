@@ -273,6 +273,8 @@
   color:#654352;background:linear-gradient(#fff8e8,#e5c9a5);
   box-shadow:0 2px 2px rgba(75,48,42,.28);cursor:pointer;
 }
+/* 非標準倍率時保留同一顆膠囊的材質，只讓「小／大」文字置中。 */
+#picker .pol-more[data-scale] {padding:0;font-size:12px;line-height:1;}
 #picker .pol-more[aria-expanded="true"] {background:#82617b;color:#fff8f0;border-color:#6d4e6b;}
 #picker .pol-more:focus-visible,#picker .pol-size-options button:focus-visible {
   outline:2px solid #876398;outline-offset:2px;

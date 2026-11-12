@@ -104,9 +104,14 @@
         if (i >= 0) {
           const more = document.createElement('button');
           more.type = 'button'; more.className = 'pol-more';
-          more.textContent = '⋯';
-          more.title = c.name + ' 的個別大小';
-          more.setAttribute('aria-label', c.name + ' 的個別大小');
+          // 顯示已選角色目前的個別倍率；標準大小仍維持原本的「⋯」。
+          const current = Number(o.getPetScale(c.id));
+          const scaleLabel = current < 1 - .001 ? '小' : current > 1 + .001 ? '大' : '⋯';
+          more.textContent = scaleLabel;
+          if (scaleLabel !== '⋯') more.setAttribute('data-scale', scaleLabel);
+          const scaleStatus = scaleLabel === '⋯' ? '標準' : scaleLabel;
+          more.title = c.name + ' 的個別大小：' + scaleStatus;
+          more.setAttribute('aria-label', c.name + ' 的個別大小：' + scaleStatus);
           more.setAttribute('aria-haspopup', 'true');
           more.setAttribute('aria-expanded', String(openScaleId === c.id));
           more.onclick = e => {
@@ -128,7 +133,6 @@
             caption.textContent = c.name + '・個別大小';
             const row = document.createElement('div');
             row.className = 'seg pol-size-options';
-            const current = o.getPetScale(c.id);
             scaleChoices.forEach(({ text, factor }) => {
               const option = document.createElement('button');
               option.type = 'button'; option.textContent = text;
