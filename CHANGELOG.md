@@ -90,3 +90,69 @@
 - 備份：[backup/pre-remove-notebook-rings-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-remove-notebook-rings-20261112)。
 - 本次 PR 合併後，如需回復此 UI 精簡，可單獨 Revert 本次 PR；不要 Reset main，避免覆蓋後續修改。
 - 此次依據是真實網站的玩家截圖修正；**不以 AI 生圖充當 HTML/CSS 渲染驗收**。
+
+---
+
+## 2026-11-12｜第二批網頁版功能（GPT-6，給 Claude 的交接）
+
+**狀態**：完成網頁端程式更新；維持 `pet-extension.zip` 不變，未發行擴充功能新版。
+**開工前備份**：[backup/pre-batch2-features-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-batch2-features-20261112)；另有較早的 [backup/pre-web-batch2-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-web-batch2-20261112)。
+**本次功能分四個獨立提交**，功能完成後才合併到 main，合併時保留個別提交（不可 squash）。
+**原始介面**：保留先前已通過玩家截圖修正的手帳 UI。此批不新增任何 AI 生成圖片，所有特效與選單均由程式繪製。
+
+### 功能1｜季節楓葉 SVG／粒子圖層（提交 `2ba580507`）
+
+- 修改檔案及主要行數（本批代碼所在範圍，後續請以原始碼為準）：
+  - `seasonal-micro-scene.js` L55–69：楓葉由 🍁 emoji 換為暖紅 `#d9673a` 內嵌 SVG，大小 12–17px；銀杏維持。
+  - `seasonal-micro-scene.js` L81–94：楓葉／銀杏 SVG 避免再設定 fontSize，新增 `stage.insertBefore(el, stage.firstChild)` 以放在角色後方。
+  - `seasonal-micro-scene.css` L7／L31：保留粒子 `z-index:0`，兩種 SVG 皆有 `width:100%;height:100%`。
+  - `index.html` L15、L19：快取參數 CSS `?v=2`、JS `?v=3`。
+- 新 API／opts：無；localStorage：無。
+- 擴充功能注意：這兩個季節檔案是**網頁獨立載入**，不在 `pet-engine.js`；Chrome 同步時是否引入季節微景由 Claude 另行決定，別把它重複加進引擎。
+- 單獨還原：Revert 提交 `2ba580507`；若已更新快取路徑，還原後需再調整季節檔案的 `?v=`。
+
+### 功能2｜偷看滑鼠（提交 `870efafe3`）
+
+- 修改檔案：`pet-engine.js` L115、L522–547、L566–583。
+- 新增引擎選項：`new QPet.World(stage,{watchMouse:true})`，**預設 true**；設 `false` 不註冊監聽。
+- `World.watchPointer(e)`：在 `document` 監聽 `pointermove`，100ms 節流；排除觸控、睡覺、拖曳／拋出、`peek`、`follow`、`goal` 等。水平距離 250px 內、最近 1.5 秒移動才觸發。站立角色轉頭 1–2 秒，30% 冒音符或驚嘆號；走路角色僅有 20% 停下，其餘繼續。角色各自冷卻 6–12 秒。
+- 新 API：選項 `opts.watchMouse`；internal `World.watchPointer(e)`；新增 `Pet.mouseLookReadyAt` 狀態。
+- localStorage：**無**，不記錄滑鼠座標。
+- 擴充功能注意：不要將 `pointermove` 綁到 `stage`，因為 `stage` 是 `pointer-events:none`；要綁 `document`；舊的 `new QPet.World(stage,{max})` 呼叫相容。
+- 單獨還原：Revert 提交 `870efafe3`；如 Git 顯示共享 `pet-engine.js` 的衝突，僅處理此功能的 listener／`watchPointer`／每隻角色冷卻欄位，其他功能不得刪除。
+
+### 功能3｜歡迎回來（提交 `bb7db39b7`）
+
+- 修改檔案：`pet-engine.js` L424–427、L526–536、L610–650。
+- 新增引擎選項：`opts.welcome` 預設 **true**，`opts.welcomeAfter` 預設 **600 秒**。
+- `World.welcomeBack()`／`World.welcomePet(p,index,total,group)`：`visibilitychange` 隱藏時計算離開起點，重新可見時只觸發一次；少於門檻不觸發。睡眠中先 `rouse()` 約 2 秒後用 `next` 銜接；醒著的角色跑到中段左右分散，先顯示愛心，再使用 `wave` 或 `click`，透過 `next` 返回站立；多隻角色間錯開 300–800ms，`touch()` 重置入睡計時。拖曳或拋出時不強行覆蓋。
+- 為使 `click` 可於歡迎結束時接下一步，`case 'click'` 完成分支只新增 `!this.done()` 判斷；舊的無 `next` 情況仍走路。
+- 新 API：`opts.welcome`、`opts.welcomeAfter`，內部 `World.welcomeBack()`／`World.welcomePet()`。
+- localStorage：**無**，`awayAt` 是每個 World 的暫存時間。
+- 擴充功能注意：需要 `document.visibilitychange`；Chrome popup/背景頁與網頁不同，Claude 應確認實際分頁失焦／返回判定，並避免和原有吃飯提醒互相覆蓋；不依賴 `index.html` 元素 id。
+- 單獨還原：Revert `bb7db39b7`；保留原本 `mealCheck()` 監聽，勿刪除吃飯提醒。
+
+### 功能4｜每隻角色個別大小（提交 `e1065a238`）
+
+- 影響檔案／範圍：
+  - `pet-engine.js` L10–12、L132–140、L511–523、L550–564：讀取保存的倍率、加入 `getPetScale(id)`／`setPetScale(id,factor)`、修改 `Pet.resize()`；最終高度約束 `SIZE_MIN/SIZE_MAX`（100–240px），`ground()` 照常調整腳底。
+  - `pet-picker.js` L11–34、L43–124：**只在 opt-in 模式**替已選中的拍立得外框旁加「⋯」膠囊，點擊展開向下的三段大小選單；舊的 `QPet.picker(o)` 不帶選項時布局不變。
+  - `index.html` L17–18、L122–130：引擎、選角快取由 `?v=0.8` 升 `?v=0.9`；網頁呼叫 `QPet.picker` 時傳入倍率回呼，保留原有全域大小按鈕；`notebook-ui.css` 快取 `?v=3`。
+  - `notebook-ui.css` L257–307：只針對網頁 `#picker` 加入膠囊與向下浮層（手機 390px 有縮窄樣式）；不碰共用 `vh-ui.css`。
+- 新 API：`world.getPetScale(id)` 回傳倍率；`world.setPetScale(id, 0.85 | 1 | 1.15)` 即時改尺寸並儲存，成功回傳 true；原有 `world.setSize('小'|'中'|'大')` 完整保留。
+- localStorage：`pet_size_each`，格式 `{"角色id":0.85,"另一id":1.15}`，標準 1 預設不必存；所有存取均 try/catch，非法資料會回到預設。
+- 倍率公式：視窗高度 × 全域大小比例 × 名冊 size/120 × 個別倍率，結果再限制 100–240px。
+- 擴充功能注意：`pet-engine.js` API 可共用；`pet-picker.js` 的浮層**預設不開啟**，需傳 `scaleControls:true`、`getPetScale`、`onPetScale` 三項。視覺採 `notebook-ui.css` 網頁專屬樣式，Claude 若要在 Chrome popup 使用，需要再同步對應 CSS。選角元件必須有 `#grid`、`#group`、`#picked`，但 engine 的縮放 API **不依賴**這些 id。
+- 單獨還原：Revert `e1065a238`。請注意本提交也更新了季節快取參數；如回退後季節特效仍要保留新 SVG，需保持快取路徑指向最新季節檔案。已存在的 localStorage 資料不必手動清理，舊版程式不使用它。
+
+### 檢查與驗收
+- 完成靜態 JS 語法檢查，與以假 DOM／Canvas 環境跑 1、2、4 隻角色的邏輯檢查：倍率即時生效、腳底對齊、localStorage 保存／壞資料容錯、觸控忽略、100ms 滑鼠節流、睡眠迷糊醒來後的歡迎動作、拍立得浮層觸發與舊 Picker 向下相容，均通過。
+- **未取得真實瀏覽器畫面或 Console**：390px 版面視覺、角色拖曳／相遇／探頭等完整現場操作、主機 GitHub Pages 佈署狀態，仍待使用者在 Chrome 開啟網頁後確認；不可誤報為已完成實際瀏覽器驗收。
+- `pet-extension.zip` 和 `version.json` 需在合併後透過 SHA／git diff 再確認零改動。
+
+### 未處理，由 Claude 後續接手
+1. 被捲動嚇到。
+2. 一鍵隱藏所有角色。
+3. 指定網站不出現桌寵。
+4. 同步上述新引擎／UI 至 Chrome 擴充功能、重新打包 ZIP、更新版本／發布。**本次沒有做任何下載版更新**。
+

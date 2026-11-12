@@ -252,3 +252,55 @@
 @media (prefers-reduced-motion:reduce) {
   #picker .pol,#picker .tk {transition:none;}
 }
+
+
+/* 2026-11-12｜個別角色大小：僅已選中的拍立得外框旁顯示膠囊「⋯」。
+ * 按鈕和選單均為真實 HTML/CSS，無生成圖片；選單固定向下展開。
+ * 此樣式只由網頁版 index.html 載入，不更動擴充功能共同樣式。
+ */
+#picker .pols.pols-with-scale { overflow:visible;gap:16px 12px; }
+#picker .pol-slot {position:relative;flex:0 0 94px;width:94px;min-width:0;z-index:1;}
+#picker .pol-slot.is-scale-open {z-index:80;}
+#picker .pol-slot > .pol {display:block;width:88px;max-width:none;min-width:0;}
+#picker .pol-slot:nth-child(3n+1) > .pol {transform:rotate(-2deg);}
+#picker .pol-slot:nth-child(3n+2) > .pol {transform:rotate(1.5deg);}
+#picker .pol-slot:nth-child(3n) > .pol {transform:rotate(-1deg);}
+#picker .pol-slot > .pol:active {transform:scale(.96);}
+#picker .pol-more {
+  position:absolute;right:-7px;bottom:6px;z-index:10;
+  width:24px;height:23px;border:1px solid #bb9470;border-radius:13px;
+  padding:0 0 7px;line-height:1;font-size:21px;font-weight:700;
+  color:#654352;background:linear-gradient(#fff8e8,#e5c9a5);
+  box-shadow:0 2px 2px rgba(75,48,42,.28);cursor:pointer;
+}
+#picker .pol-more[aria-expanded="true"] {background:#82617b;color:#fff8f0;border-color:#6d4e6b;}
+#picker .pol-more:focus-visible,#picker .pol-size-options button:focus-visible {
+  outline:2px solid #876398;outline-offset:2px;
+}
+#picker .pol-size-menu {
+  position:absolute;top:calc(100% + 7px);left:0;z-index:90;
+  width:188px;max-width:calc(100vw - 90px);
+  border:1px solid #bd9477;border-radius:13px;padding:11px 10px 12px;
+  background:linear-gradient(#fffaf1,#f7e8d6);
+  box-shadow:0 7px 15px rgba(68,46,53,.27),inset 0 0 0 3px rgba(255,255,255,.56);
+  color:#604439;pointer-events:auto;
+}
+#picker .pol-size-menu.align-right {left:auto;right:0;}
+#picker .pol-size-title {
+  font-size:12px;color:#624951;line-height:1.4;
+  font-weight:700;margin-bottom:8px;white-space:nowrap;
+}
+#picker .pol-size-menu .pol-size-options {
+  display:flex;gap:3px;padding:3px;border-radius:11px;
+  background:#fffdf8;border-color:#c0a18b;
+}
+#picker .pol-size-menu .pol-size-options button {
+  flex:1;min-width:0;border-radius:8px;padding:6px 1px;font-size:12px;
+}
+@media (max-width:520px) {
+  #picker .pols.pols-with-scale {gap:15px 9px;}
+  #picker .pol-slot {flex-basis:83px;width:83px;}
+  #picker .pol-slot > .pol {width:77px;}
+  #picker .pol-more {right:-6px;bottom:4px;width:22px;height:22px;font-size:20px;}
+  #picker .pol-size-menu {width:176px;padding:9px 8px;}
+}

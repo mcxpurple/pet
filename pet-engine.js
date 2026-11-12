@@ -4,10 +4,11 @@
  * 保留所有權利，未經同意請勿複製、修改或用於其他專案。
  * https://www.threads.com/@mcx_purple
  */
-/* Q版桌寵引擎 v0.8｜網頁版與擴充功能共用
+/* Q版桌寵引擎 v0.9｜網頁版與擴充功能共用
    用法：const world = new QPet.World(stageElement, { max });
          world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] }
          world.setSize('小' | '中' | '大');     // 玩家選擇的角色大小，立即生效
+         world.setPetScale(id, .85 | 1 | 1.15); // 個別角色大小，立即生效
          world.callTo(clientX);                // 叫最近的角色小跑步過來
    選項：opts.once(key) → Promise<boolean>，同一 key 第一次呼叫回傳 true（吃飯提醒一天一次用；預設存在 localStorage） */
 (function (global) {
@@ -111,6 +112,7 @@
       this.frameT = FRAME[cfg.speed] || FRAME['中'];
       this.t = 0; this.modeT = 0; this.phase = 0; this.meetCool = 0; this.fxT = 0;
       this.vx = 0; this.peekCool = rand(8, 20); this.edgeOK = false; this.goal = null; this.lead = null; this.next = null;
+      this.mouseLookReadyAt = 0;  // 偷看滑鼠：每隻角色獨立冷卻（毫秒時間戳）
       this.lastTouch = performance.now();
       this.el = document.createElement('div'); this.el.className = 'qpet';
       this.cv = document.createElement('canvas');
@@ -130,8 +132,10 @@
     /* 依視窗高度與玩家選擇的大小重新計算尺寸 */
     resize() {
       const cx = this.w ? this.x + this.w / 2 : null;
-      const base = Math.min(SIZE_MAX, Math.max(SIZE_MIN, global.innerHeight * (SIZE_PCT[this.w0.size] || SIZE_PCT['中'])));
-      this.h = Math.round(base * (this.c.size || SIZE_BASE) / SIZE_BASE);
+      // 全域大小 × 名冊 size × 個別倍率，最終仍受 100–240px 上下限保護。
+      const height = global.innerHeight * (SIZE_PCT[this.w0.size] || SIZE_PCT['中']) *
+        (this.c.size || SIZE_BASE) / SIZE_BASE * this.w0.getPetScale(this.c.id);
+      this.h = Math.round(Math.min(SIZE_MAX, Math.max(SIZE_MIN, height)));
       this.w = Math.round(this.h / ASPECT);
       this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
       const dpr = global.devicePixelRatio || 1;
@@ -419,7 +423,7 @@
           break;
         case 'click':
           bob = -Math.sin(Math.min(this.modeT / (this.has('click') ? .35 : .4), 1) * Math.PI) * (this.has('click') ? 8 : 18);
-          if (this.modeT > this.modeDur) this.setMode('walk', rand(3, 6));
+          if (this.modeT > this.modeDur && !this.done()) this.setMode('walk', rand(3, 6));
           break;
         case 'drag':
           tilt = Math.sin(this.t * 6) * (this.has('drag') ? 3 : 8);
@@ -505,9 +509,31 @@
   class World {
     constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
+      // 分角色倍率使用 pet_size_each，允許 0.85 / 1 / 1.15，預設標準。
+      this.petScales = Object.create(null);
+      try {
+        const saved = JSON.parse(localStorage.getItem('pet_size_each') || '{}');
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+          Object.entries(saved).forEach(([id, value]) => {
+            if ([.85, 1, 1.15].includes(Number(value))) this.petScales[id] = Number(value);
+          });
+        }
+      } catch { /* 無 localStorage（例如隱私模式）時使用預設值 */ }
       this.slot = slotNow(); this.slotT = 0; this.fest = festNow();
+      this.watchMouse = opts.watchMouse !== false;  // 未指定時預設開啟；擴充功能可 opt-out
+      this.mouseThrottleAt = 0; this.mousePoint = null;
       this.once = opts.once || (key => { try { if (localStorage.getItem('pet_meal') === key) return Promise.resolve(false); localStorage.setItem('pet_meal', key); } catch {} return Promise.resolve(true); });
-      document.addEventListener('visibilitychange', () => this.mealCheck());
+      // 回到分頁歡迎：不使用 localStorage；一次隱藏只觸發一次。
+      this.welcome = opts.welcome !== false;
+      this.welcomeAfter = Number.isFinite(opts.welcomeAfter) && opts.welcomeAfter >= 0 ? opts.welcomeAfter : 600;
+      this.awayAt = document.hidden ? Date.now() : 0;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { this.awayAt = Date.now(); return; }
+        const elapsed = this.awayAt ? (Date.now() - this.awayAt) / 1000 : 0;
+        this.awayAt = 0;
+        this.mealCheck(); // 保留原本吃飯提醒行為
+        if (this.welcome && elapsed >= this.welcomeAfter) this.welcomeBack();
+      });
       this.max = opts.max || 2;                         // 同時出現上限：網頁版與擴充功能皆為 4
       const root = stage.getRootNode();
       const style = document.createElement('style'); style.textContent = CSS;
@@ -515,10 +541,46 @@
       this.loop = this.loop.bind(this);
       this.onResize = () => this.pets.forEach(p => p.resize());
       global.addEventListener('resize', this.onResize);
+      if (this.watchMouse) {
+        this.onPointerMove = e => this.watchPointer(e);
+        document.addEventListener('pointermove', this.onPointerMove, { passive: true });
+      }
     }
     setSize(mode) {
       this.size = SIZE_PCT[mode] ? mode : '中';
       this.pets.forEach(p => p.resize());
+    }
+    /* 個別大小 API：new QPet.World(stage,{max}) 舊呼叫完全相容。
+       調整時保留角色中心 X，沿用 Pet.resize() 的 ground() 腳底對齊。 */
+    getPetScale(id) { return this.petScales[String(id)] || 1; }
+    setPetScale(id, factor) {
+      const scale = Number(factor);
+      if (!id || ![.85, 1, 1.15].includes(scale)) return false;
+      if (scale === 1) delete this.petScales[String(id)];
+      else this.petScales[String(id)] = scale;
+      try { localStorage.setItem('pet_size_each', JSON.stringify(this.petScales)); } catch {}
+      this.pets.filter(p => String(p.c.id) === String(id)).forEach(p => p.resize());
+      return true;
+    }
+    /* 偷看滑鼠：只收 document pointermove，100ms 節流；不影響拖曳、睡覺與帶目標移動。
+       滑鼠位置只存在記憶體，不寫入 localStorage。opts.watchMouse=false 可完全停用。 */
+    watchPointer(e) {
+      if (e.pointerType === 'touch' || document.hidden || !this.pets.length) return;
+      const now = performance.now();
+      if (now - this.mouseThrottleAt < 100) return;
+      this.mouseThrottleAt = now;
+      this.mousePoint = { x: e.clientX, y: e.clientY, at: now };
+      if (now - this.mousePoint.at > 1500 || this.pets.some(p => p.mode === 'drag' || p.mode === 'fall')) return;
+      this.pets.forEach(p => {
+        if (now < p.mouseLookReadyAt || Math.abs(p.cx() - this.mousePoint.x) > 250) return;
+        if (p.goal != null || p.edgeOK || p.lead || p.pose || p.v > 4 && p.mode !== 'walk') return;
+        if (p.mode !== 'stand' && p.mode !== 'walk') return; // 排除 sleep / peek / follow / click 等動畫
+        p.mouseLookReadyAt = now + rand(6000, 12000);
+        if (p.mode === 'walk' && Math.random() >= .20) return; // 80% 機率照常散步
+        p.setMode('stand', rand(1, 2), 'watch');
+        p.dir = this.mousePoint.x >= p.cx() ? 1 : -1;
+        if (Math.random() < .30) this.fx(pick(['音符', '驚嘆號']), p.cx(), p.y + 5);
+      });
     }
     /* 特效：kind 可為 '愛心'｜'音符'｜'驚嘆號'｜'閃光'｜'zzz'｜任意 emoji｜上述的陣列（隨機取一個） */
     fx(kind, x, y, drift) {
@@ -545,6 +607,45 @@
       if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); setTimeout(() => this.mealCheck(), 2500); }
     }
     clear() { cancelAnimationFrame(this.raf); this.pets.splice(0).forEach(p => p.destroy()); }
+    /* 歡迎回來：每次隱藏超過 welcomeAfter 秒只觸發一次。
+       拖曳、拋出狀態不打斷。睡著先 rouse() 迷糊醒來，再以 next 串到歡迎動作。 */
+    welcomeBack() {
+      if (!this.pets.length || document.hidden) return;
+      const group = [...this.pets];
+      let delay = 0;
+      group.forEach((p, i) => {
+        if (i) delay += rand(300, 800); // 多角色錯開，避免同時衝向中央
+        global.setTimeout(() => {
+          if (document.hidden || !this.pets.includes(p) || ['drag', 'fall'].includes(p.mode)) return;
+          const greet = () => {
+            if (!this.pets.includes(p) || document.hidden || ['drag', 'fall'].includes(p.mode)) return;
+            this.welcomePet(p, i, group.length, group);
+          };
+          if (p.mode === 'sleep') {
+            p.rouse();               // 迷糊醒來約兩秒
+            p.next = greet;          // 原本 rouse() 的疲倦後續讓位給歡迎
+          } else greet();
+        }, delay);
+      });
+    }
+    welcomePet(p, index, total, group) {
+      const W = global.innerWidth;
+      const widest = Math.max(...group.map(q => q.w));
+      const gap = total > 1 ? Math.min(Math.max(72, widest * 1.08), Math.max(0, (W - widest - 8) / (total - 1))) : 0;
+      const center = W / 2 + (index - (total - 1) / 2) * gap;
+      const destination = Math.min(Math.max(0, center - p.w / 2), Math.max(0, W - p.w));
+      p.touch(); p.edgeOK = false; p.meetCool = Math.max(p.meetCool, 12);
+      const arrive = () => {
+        if (!this.pets.includes(p) || document.hidden) return;
+        p.dir = p.cx() < W / 2 ? 1 : -1; // 依現有左右朝向素材，朝畫面中央
+        p.touch();
+        this.fx('愛心', p.cx(), p.y + 4);
+        p.setMode(p.has('wave') ? 'wave' : 'click', 1.5);
+        p.next = () => p.setMode('stand', rand(1.5, 2.3));
+      };
+      if (Math.abs(p.x - destination) < 9) arrive();
+      else p.goTo(destination, 'run', arrive);
+    }
     /* 叫過來：離 clientX 最近、沒被拖著的角色小跑步過去 */
     callTo(clientX) {
       const ps = this.pets.filter(p => !['drag', 'fall'].includes(p.mode));

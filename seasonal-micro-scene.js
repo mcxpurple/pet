@@ -54,8 +54,11 @@
     } else if (type === 'autumn') {
       if (Math.random() < .5) {
         el.classList.add('qseason-maple');
-        el.textContent = '🍁';
         size = random(12, 17);
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        // 內嵌 SVG 暖紅楓葉：與銀杏採同一方式，不依賴 emoji 或遠端素材。
+        el.innerHTML = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 19 8 25 5 24 12 30 14 25 19 27 25 19 23 16 29 13 23 5 25 7 19 2 14 8 12 7 5 13 8Z" fill="#d9673a"/><path d="M16 27V8m0 11-7-6m7 6 7-6" stroke="#a4492a" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>';
       } else {
         el.classList.add('qseason-ginkgo');
         size = random(13, 18);
@@ -76,7 +79,7 @@
     const duration = random(PARTICLE_MIN_MS, PARTICLE_MAX_MS);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
-    if (type !== 'firefly' && !(type === 'autumn' && el.classList.contains('qseason-ginkgo'))) {
+    if (type !== 'firefly' && !(type === 'autumn' && (el.classList.contains('qseason-ginkgo') || el.classList.contains('qseason-maple')))) {
       el.style.fontSize = size + 'px';
     }
     el.style.setProperty('--duration', duration + 'ms');
@@ -85,7 +88,8 @@
     // 2026-11-12 微調：從腳邊向上飄至角色身體周圍，仍不從畫面頂端落下。
     el.style.setProperty('--dy', (-random(type === 'firefly' ? 45 : 65, type === 'firefly' ? 85 : 110)).toFixed(1) + 'px');
     el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
-    stage.appendChild(el);
+    // DOM 順序與 z-index 雙重保護：粒子在角色後方，不遮住角色。
+    stage.insertBefore(el, stage.firstChild);
     live.add(el);
     window.setTimeout(() => { el.remove(); live.delete(el); }, duration + 100);
   }
