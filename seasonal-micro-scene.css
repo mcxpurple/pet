@@ -1,0 +1,55 @@
+/* Violet Hour 紫夜星光｜網頁版季節微景（2026-11-12，GPT-6）
+ * 只供 index.html 載入；不屬於 Chrome 下載 ZIP。
+ * 全部效果集中於桌寵腳邊，不從畫面頂端落下。
+ */
+.qseason-particle {
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  user-select:none;
+  line-height:1;
+  opacity:0;
+  transform:translate3d(-50%,0,0);
+  animation:qseason-scatter var(--duration,3400ms) ease-out forwards;
+  will-change:transform,opacity;
+}
+.qseason-plum {
+  color:#e49cba;
+  font-family:Arial,"Segoe UI Symbol",sans-serif;
+  text-shadow:0 1px 2px rgba(65,32,46,.18);
+}
+.qseason-cherry {
+  color:#f1abc9;
+  font-family:Arial,"Segoe UI Symbol",sans-serif;
+  text-shadow:0 1px 2px rgba(65,32,46,.14);
+}
+.qseason-tung {
+  color:#fffdf2;
+  font-family:Arial,"Segoe UI Symbol",sans-serif;
+  text-shadow:0 0 2px rgba(96,89,72,.65);
+}
+.qseason-maple { font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+.qseason-ginkgo svg { width:100%;height:100%;display:block; }
+.qseason-snow { color:#e9f2ff;text-shadow:0 0 3px rgba(87,116,144,.32); }
+.qseason-firefly {
+  border-radius:50%;
+  background:#ffed9b;
+  box-shadow:0 0 5px 2px rgba(255,233,123,.68),0 0 12px 3px rgba(246,242,145,.34);
+  animation-name:qseason-firefly;
+}
+@keyframes qseason-scatter {
+  0% {opacity:0;transform:translate3d(-50%,0,0) rotate(0deg) scale(.75)}
+  17% {opacity:var(--peak-opacity,.8)}
+  75% {opacity:calc(var(--peak-opacity,.8) * .55)}
+  100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--rotation,0deg)) scale(1)}
+}
+@keyframes qseason-firefly {
+  0% {opacity:0;transform:translate3d(-50%,0,0) scale(.65)}
+  20% {opacity:.92}
+  44% {opacity:.30}
+  68% {opacity:.82}
+  100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-26px),0) scale(.75)}
+}
+@media (prefers-reduced-motion:reduce) {
+  .qseason-particle {animation:none;display:none}
+}
