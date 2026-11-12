@@ -156,3 +156,17 @@
 3. 指定網站不出現桌寵。
 4. 同步上述新引擎／UI 至 Chrome 擴充功能、重新打包 ZIP、更新版本／發布。**本次沒有做任何下載版更新**。
 
+
+
+## 2026-11-12｜個別大小選單圖層修正（網頁版，GPT-6）
+
+玩家提供**實際網頁截圖**，指出拍立得「⋯」的向下選單被下方「已選」與「角色大小」蓋住，無法順利點擊。本次直接修程式，不以生成圖片當作實際 UI。
+
+- `pet-picker.js`：將開啟的 `.pol-size-menu` 從 `.pol-slot` 內移至網頁選角容器 `#picker` 的直屬子元素（portal），令浮層脫離 `.sheet` 捲動區與兄弟元素的 stacking context；根據「⋯」膠囊 `getBoundingClientRect()` 定位在下方，水平夾住螢幕邊界。已加入捲動／縮放定位更新；修正「點擊浮層內按鈕不該被外部點擊事件搶先關閉」及 Escape／點擊外面關閉。
+- `notebook-ui.css`：新增 `#picker > .pol-size-menu.is-portal` 的 `position:fixed; z-index:10000`，不更換原有色彩、三段大小按鈕及拍立得設計。
+- `index.html`：`pet-picker.js?v=0.10`、`notebook-ui.css?v=4`，確保瀏覽器載入最新檔。
+- **沒有修改** `pet-engine.js`、`vh-ui.css`、`pet-extension.zip`、`version.json`、`install.html`、`roster.yaml`、`files.json`、`pets/`。
+- 自動化模擬 DOM 互動測試已通過：浮層確實移到 `#picker` 直下、下方定位、水平防溢、大小按鈕可點、外部與 Escape 關閉、捲動跟隨、舊版未啟用選單時選角布局維持；**真實瀏覽器顯示仍需玩家開啟網頁確認**。
+- 修改前備份：[backup/pre-size-popup-layer-fix-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-size-popup-layer-fix-20261112)。
+- **個別還原**：在 GitHub Revert 本次 PR（只影響選單層級及相關快取），不需要回復第二批其他功能。明天 Claude 同步擴充功能時，若引入個別大小 UI，應一併同步此 `pet-picker.js` portal 修正；它依賴網頁的 `#picker` 上層與 `notebook-ui.css` 樣式，未啟用時不影響共用引擎。
+

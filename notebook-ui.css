@@ -304,3 +304,22 @@
   #picker .pol-more {right:-6px;bottom:4px;width:22px;height:22px;font-size:20px;}
   #picker .pol-size-menu {width:176px;padding:9px 8px;}
 }
+
+/* 2026-11-12 修正：個別大小面板移到 #picker 直屬子層。
+ * 不受 .sheet 的 overflow-y:auto 和兄弟區塊 z-index 所限制。
+ * 保留原面板外觀、大小按鈕與固定向下展開規則。 */
+#picker > .pol-size-menu.is-portal {
+  position:fixed;
+  z-index:10000;
+  right:auto;
+  bottom:auto;
+  width:188px;
+  margin:0;
+  max-height:calc(100dvh - 12px);
+  overflow-y:auto;
+}
+@media (max-width:520px) {
+  #picker > .pol-size-menu.is-portal {
+    width:176px;
+  }
+}

@@ -14,20 +14,49 @@
     const scaleUI = o.scaleControls === true && typeof o.onPetScale === 'function' && typeof o.getPetScale === 'function';
     const scaleChoices = [{ text: '小', factor: .85 }, { text: '標準', factor: 1 }, { text: '大', factor: 1.15 }];
     let openScaleId = null;
-    // 多次開啟選角畫面時，清除上次 picker 綁定的 document 監聽。
+    // 選單移到 #picker 直屬子層，脫離捲動紙張與「已選／角色大小」的堆疊層。
+    // 舊版擴充功能未啟用 scaleControls，仍維持原來的 picker DOM。
+    const portalHost = scaleUI ? o.grid.closest('#picker') : null;
+    let activePopup = null, activeAnchor = null;
+    function clearPopup() {
+      if (activePopup) activePopup.remove();
+      activePopup = null; activeAnchor = null;
+    }
+    function placePopup() {
+      if (!activePopup || !activeAnchor) return;
+      const r = activeAnchor.getBoundingClientRect();
+      const width = activePopup.getBoundingClientRect().width || 188;
+      const viewport = document.documentElement.clientWidth || global.innerWidth;
+      // 固定從按鈕下方展開；水平限制在視窗內，不會被已選標籤擋住。
+      activePopup.style.left = Math.max(8, Math.min(r.right - width + 12, viewport - width - 8)) + 'px';
+      activePopup.style.top = r.bottom + 7 + 'px';
+    }
+    // 多次開啟選角畫面時，清除上次 picker 綁定的 document 監聽與浮層。
     if (typeof o.grid._qpetScaleCleanup === 'function') o.grid._qpetScaleCleanup();
     if (scaleUI) {
       const outside = e => {
-        if (openScaleId != null && !o.grid.contains(e.target)) { openScaleId = null; renderGrid(); }
+        if (openScaleId != null && !o.grid.contains(e.target) && !(activePopup && activePopup.contains(e.target))) {
+          openScaleId = null; renderGrid();
+        }
       };
       const onEscape = e => {
         if (e.key === 'Escape' && openScaleId != null) { openScaleId = null; renderGrid(); }
       };
       document.addEventListener('pointerdown', outside);
-      o.grid.addEventListener('keydown', onEscape);
+      document.addEventListener('keydown', onEscape);
+      // 捲動手帳內頁或改變視窗寬度時，浮層跟著膠囊按鈕的位置移動。
+      if (portalHost) {
+        document.addEventListener('scroll', placePopup, true);
+        global.addEventListener('resize', placePopup);
+      }
       o.grid._qpetScaleCleanup = () => {
+        clearPopup();
         document.removeEventListener('pointerdown', outside);
-        o.grid.removeEventListener('keydown', onEscape);
+        document.removeEventListener('keydown', onEscape);
+        if (portalHost) {
+          document.removeEventListener('scroll', placePopup, true);
+          global.removeEventListener('resize', placePopup);
+        }
         delete o.grid._qpetScaleCleanup;
       };
     }
@@ -53,6 +82,7 @@
       o.onChange && o.onChange(st.pick.slice());
     }
     function renderGrid() {
+      clearPopup();
       o.grid.innerHTML = '';
       o.grid.classList.toggle('pols-with-scale', scaleUI);
       o.roster.filter(c => c.group === o.select.value).forEach(c => {
@@ -116,9 +146,15 @@
           }
         }
         o.grid.appendChild(slot);
-        // 不論在最後一列或手機窄螢幕，都只往下開；左右僅做防裁切對齊。
+        // 網頁版將浮層提到 #picker 最上層，避免被下方已選與全域大小欄覆蓋。
         const popup = slot.querySelector('.pol-size-menu');
-        if (popup && slot.getBoundingClientRect().left + 190 > o.grid.getBoundingClientRect().right) {
+        if (popup && portalHost) {
+          popup.classList.add('is-portal');
+          portalHost.appendChild(popup);
+          activePopup = popup;
+          activeAnchor = slot.querySelector('.pol-more');
+          placePopup();
+        } else if (popup && slot.getBoundingClientRect().left + 190 > o.grid.getBoundingClientRect().right) {
           popup.classList.add('align-right');
         }
       });
