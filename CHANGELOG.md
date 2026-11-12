@@ -1,3 +1,36 @@
+## 2026-11-12｜網頁版季節水彩 PNG 與台灣動物彩蛋（GPT-6）
+
+**範圍**：`seasonal-micro-scene.js`、`seasonal-micro-scene.css`、`assets/seasonal/README.md`、`index.html` 的季節快取參數及本 CHANGELOG。**保持不變**：`pet-engine.js`、`pet-picker.js`、`pet-extension.zip`、`version.json`、`pets/`；此任務沒有修改動物 PNG。
+
+### 水彩季節微景
+- 捨棄原本 `✿/❀` 字形及秋季楓葉／銀杏 SVG，改為 `assets/seasonal/` 已完成的透明水彩 PNG；每顆使用 `img`（`alt=""`、`draggable=false`、`pointer-events:none`），只預載目前季節圖。`new Image()` 載入成功才加入候選，錯誤圖不加入候選；`ginkgo-fragment.png` 尚缺，故完全不列入設定且不請求。
+- 全季仍共享最多 **6 顆**粒子；保留每 950–1650ms 嘗試一顆、每顆 2700–4100ms、原腳邊起點、X 位移 ±42px、依桌寵高度 70%–120% 向上飄升與淡出；圖片約 **15–32px**，完整花／葉偏上限、花瓣／碎片偏下限。飛散類候選分組抽樣：`-petal/-fragment/-fluff/-seed` 約 75%、完整花／葉／穗約 25%。
+- 春／夏／秋加入蒲公英：`dandelion-puff.png` 以少量機率只在腳邊停留淡出；`dandelion-seed.png` 才隨粒子飄散。`snowball.png`（大）保留不啟用，改用 `snowball-small.png`；加入 `snowflake-fragment.png`。夏季夜間 CSS 螢火蟲尺寸仍為 3–5.5px，19:00–05:59 出現。
+
+| 時段 | 粒子素材目錄／名稱 | 動物素材 |
+| --- | --- | --- |
+| 1–2 月 | winter/plum-full、plum-petal、camellia-full、camellia-petal | formosan-black-bear.png |
+| 3–4 月 | spring/taiwan-cherry-full/petal、taiwan-azalea-full/petal、taiwan-lily-full/petal＋dandelion | taiwan-blue-magpie.png |
+| 5 月 | spring/tung-flower-full/petal（權重 5）、taiwan-lily-full/petal＋dandelion | taiwan-blue-magpie.png |
+| 6–8 月白天 | summer/poinciana-full/petal、lotus-full/petal、daylily-full/petal、hibiscus-full/petal＋dandelion | taiwan-sika-deer.png |
+| 6–8 月夜間 | 原 CSS firefly（不請求花圖） | taiwan-sika-deer.png |
+| 9–11 月 | autumn/maple-leaf、maple-fragment、ginkgo-leaf、taiwan-rain-tree-flower、taiwan-rain-tree-pod、silvergrass-plume、silvergrass-fluff＋dandelion | leopard-cat.png |
+| 12 月 | winter/snowflake、snowflake-fragment、snowball-small、camellia-full/petal | formosan-black-bear.png |
+
+### 動物彩蛋（僅網頁）
+- 存在 `seasonal-micro-scene.js` 頂部的可調常數：**`ANIMAL_CHANCE = 0.2`**、**`ANIMAL_INTERVAL_MIN = 60`**、`ANIMAL_FIRST_DELAY_MS = 3 * 60 * 1000`。開始散步後累計 3 分鐘可見時間抽首次，之後每 60 可見分鐘再抽 20%；抽中後在該 60 分鐘窗口挑一個隨機時間點出場一次。隱藏分頁暫停可見時鐘；選角、拖曳、缺圖或已有動物在場會延後已抽中的那次，直到可出場為止。
+- 每次只預載**當季一隻**動物的 PNG，藍鵲／鹿／石虎原始圖偏向左方，向右進場時以 `scaleX(-1)` 翻轉；黑熊正面不翻轉。動物高度為桌寵實際像素高度的 50%，依圖像透明下緣個別校正站地位置；z-index 位於粒子 (-1) 之上、桌寵 (1) 之下，不修改角色引擎或打斷角色動作。
+- 程式驅動行為：藍鵲四次跳躍／左右張望／斜飛離；梅花鹿走入／低頭約兩秒／走出；石虎匍匐慢行／停兩秒／衝離；黑熊坐姿淡入／左右輕晃／淡出。正常出場約 7.5–9.5 秒。點擊動物冒一個共用 qfx 風格愛心，550ms 提早離場。動畫在分頁隱藏時暫停，prefers-reduced-motion 時不播放。
+
+### 測試、快取與還原
+- `?season=spring`、`?season=summer`、`?season=autumn`、`?season=winter`、`?season=firefly`：強制季節素材、相應動物品種，無額外切換介面。`?animal=1`：開始散步且圖載入後強制當季動物出場一次、**3 秒**後離場，可與 `?season=` 並用（例如 `?season=autumn&animal=1`）。
+- `index.html` 只改季節資源快取：`seasonal-micro-scene.css?v=2` → `?v=3`、`seasonal-micro-scene.js?v=5` → `?v=6`。
+- 備份分支：[`backup/pre-seasonal-art-link-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-art-link-20261112)；[`backup/pre-seasonal-animals-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-animals-20261112)。起點 main SHA `d436f1a1f85b5f1ca33fa796a81f4ac340d3aa66`。
+- 還原：在 GitHub **Revert 本次 PR 的季節相關提交**，並更新／還原 `index.html` 中兩個 `?v=` 參數；不要 Reset 整個 main。若只停用動物功能，可只 Revert 動物程式／樣式相關提交而保留水彩素材。
+- 程式內部 JS 語法、季節清單與時鐘邏輯做靜態／模擬檢查；**尚無真實 Chrome 深淺背景畫面、Console 或 GitHub Pages 佈署的視覺驗收**，部署後須由玩家實機確認。不得以生成圖片當作網頁驗收。
+
+---
+
 # 修改歷程｜Seasonal Micro-scene（網頁版季節微景）
 
 日期：2026-11-12  

@@ -1,10 +1,10 @@
-/* Violet Hour 紫夜星光｜網頁版季節微景（2026-11-12，GPT-6）
- * 只供 index.html 載入；不屬於 Chrome 下載 ZIP。
- * 全部效果集中於桌寵腳邊，不從畫面頂端落下。
+/* Violet Hour 紫夜星光｜網頁版季節水彩微景與夏夜螢火蟲
+ * 只供 index.html 載入，並不修改 Chrome 擴充功能。
+ * 粒子 z-index:-1、動物 z-index:0、引擎角色 z-index:1。
  */
 .qseason-particle {
   position:absolute;
-  z-index:0;
+  z-index:-1;
   pointer-events:none;
   user-select:none;
   line-height:1;
@@ -13,23 +13,15 @@
   animation:qseason-scatter var(--duration,3400ms) ease-out forwards;
   will-change:transform,opacity;
 }
-.qseason-plum {
-  color:#e49cba;
-  font-family:Arial,"Segoe UI Symbol",sans-serif;
-  text-shadow:0 1px 2px rgba(65,32,46,.18);
+.qseason-sprite {
+  display:block;
+  object-fit:contain;
+  -webkit-user-drag:none;
+  filter:drop-shadow(0 0 1px rgba(48,47,45,.25));
 }
-.qseason-cherry {
-  color:#f1abc9;
-  font-family:Arial,"Segoe UI Symbol",sans-serif;
-  text-shadow:0 1px 2px rgba(65,32,46,.14);
+.qseason-ground {
+  animation-name:qseason-ground-fade;
 }
-.qseason-tung {
-  color:#fffdf2;
-  font-family:Arial,"Segoe UI Symbol",sans-serif;
-  text-shadow:0 0 2px rgba(96,89,72,.65);
-}
-.qseason-maple svg, .qseason-ginkgo svg { width:100%;height:100%;display:block; }
-.qseason-snow { color:#e9f2ff;text-shadow:0 0 3px rgba(87,116,144,.32); }
 .qseason-firefly {
   border-radius:50%;
   background:#ffed9b;
@@ -42,6 +34,12 @@
   75% {opacity:calc(var(--peak-opacity,.8) * .55)}
   100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--rotation,0deg)) scale(1)}
 }
+@keyframes qseason-ground-fade {
+  0% {opacity:0;transform:translate3d(-50%,0,0) scale(.85)}
+  23% {opacity:var(--peak-opacity,.8)}
+  70% {opacity:var(--peak-opacity,.8)}
+  100% {opacity:0;transform:translate3d(-50%,0,0) scale(.92)}
+}
 @keyframes qseason-firefly {
   0% {opacity:0;transform:translate3d(-50%,0,0) scale(.65)}
   20% {opacity:.92}
@@ -51,4 +49,32 @@
 }
 @media (prefers-reduced-motion:reduce) {
   .qseason-particle {animation:none;display:none}
+}
+
+/* 彩蛋動物：在桌寵後方（引擎角色 z-index:1），粒子前方（-1）。 */
+.qseason-animal {
+  position:absolute;
+  z-index:0;
+  display:block;
+  object-fit:contain;
+  opacity:0;
+  pointer-events:auto;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-drag:none;
+  touch-action:manipulation;
+  transform-origin:50% 92%;
+  will-change:transform,opacity;
+}
+.qseason-heart {
+  position:absolute;
+  z-index:2;
+  pointer-events:none;
+  font-size:24px;
+  line-height:1;
+  color:#ee8198;
+  text-shadow:0 1px 3px rgba(70,36,49,.25);
+}
+@media (prefers-reduced-motion:reduce) {
+  .qseason-animal,.qseason-heart {animation:none;display:none}
 }
