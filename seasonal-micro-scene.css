@@ -21,6 +21,12 @@
 .qseason-ground {
   animation-name:qseason-ground-fade;
 }
+/* Blossoms and petals keep their original drifting path but rotate continuously.
+ * Each particle receives its own start / end angles from the JS. */
+.qseason-flower-spin {
+  animation-name:qseason-flower-scatter;
+  transform-origin:50% 50%;
+}
 .qseason-firefly {
   border-radius:50%;
   background:#ffed9b;
@@ -33,6 +39,12 @@
   17% {opacity:var(--peak-opacity,.8)}
   75% {opacity:calc(var(--peak-opacity,.8) * .55)}
   100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--rotation,0deg)) scale(1)}
+}
+@keyframes qseason-flower-scatter {
+  0% {opacity:0;transform:translate3d(-50%,0,0) rotate(var(--spin-start,0deg)) scale(.75)}
+  17% {opacity:var(--peak-opacity,.8)}
+  75% {opacity:calc(var(--peak-opacity,.8) * .55)}
+  100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--spin-end,120deg)) scale(1)}
 }
 @keyframes qseason-ground-fade {
   0% {opacity:0;transform:translate3d(-50%,0,0) scale(.85)}
