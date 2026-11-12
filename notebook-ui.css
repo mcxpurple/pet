@@ -3,8 +3,8 @@
  * © 2026 mcx_purple. All rights reserved.
  * GPT-6, 2026-11-12. Web-only: index.html 載入本檔。
  * 只改外觀：不更動 QPet 引擎、選角行為或擴充功能。
- * 視覺來源：使用者確認的奶油紙張、霧紫封皮、全長金色活頁扣、拍立得、票券。
- * 明確不包含：左側紫色格紋紙膠帶。
+ * 視覺來源：使用者確認的奶油紙張、霧紫封皮、拍立得、票券。
+ * 明確不包含：左側扣環與格紋紙膠帶、重複資料夾頁籤、郵戳、角落圖案。
  */
 
 #picker {
@@ -42,7 +42,7 @@
 #picker .sheet {
   position:relative;z-index:1;
   width:100%;max-height:calc(100dvh - 104px);
-  padding:47px 25px 27px 45px;
+  padding:38px 25px 27px 25px;
   border:2px solid #bd8e65;border-radius:20px;
   overflow-x:hidden;overflow-y:auto;
   background:
@@ -58,30 +58,7 @@
   border-radius:13px;pointer-events:none;z-index:0;
 }
 #picker .sheet > * {position:relative;z-index:1;}
-/* 左側金屬活頁扣，從頁首延續至頁尾；不用原圖的格紋紙膠帶。 */
-#picker .nb-rings {
-  position:absolute;top:58px;bottom:44px;left:-22px;
-  z-index:5;width:54px;display:flex;flex-direction:column;
-  align-items:flex-start;justify-content:space-between;
-  pointer-events:none;
-}
-#picker .nb-rings span {
-  display:block;width:52px;height:21px;min-height:15px;
-  border:4px solid #a36f3a;border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,251,205,.90) 0%,rgba(250,203,116,.48) 45%,rgba(98,56,31,.22) 100%);
-  box-shadow:
-    inset 0 2px 1px rgba(255,253,231,.9),
-    inset 0 -2px 2px rgba(83,44,24,.36),
-    0 2px 1px rgba(54,32,33,.34),
-    0 0 0 1px #e9bf7c;
-  transform:rotate(-8deg);
-}
-#picker .nb-rings span:nth-child(even) {transform:rotate(6deg);}
-#picker .nb-rings span::after {
-  content:"";display:block;position:relative;left:7px;top:-1px;
-  width:28px;height:3px;border-radius:100%;
-  background:rgba(255,251,222,.70);
-}
+/* 左側保留乾淨的紙張外框；無扣環、無格紋膠帶。 */
 /* 右側分頁與紫金書籤：只裝飾，不是額外可點擊按鈕。 */
 #picker .nb-edge-tabs {
   position:absolute;right:-18px;top:24%;bottom:10%;width:28px;
@@ -107,17 +84,6 @@
 #picker .nb-bookmark::after {content:"✦";font-size:21px;}
 /* 以資料夾為主導，取消原本整塊金黃色區域，露出紙張書寫感。 */
 #picker .fd-head {position:relative;padding-top:0;margin:0 0 13px;}
-#picker .fd-tabs {
-  position:absolute;top:-46px;left:0;z-index:2;
-  padding-right:0;
-}
-#picker .fd-tabs > .on {
-  padding:8px 21px 9px;border:1px solid #b68f6f;border-bottom:0;
-  border-radius:14px 14px 0 0;
-  background:linear-gradient(110deg,#ffefd7,#f5ddbf);color:#634232;
-  font-size:14px;font-weight:700;box-shadow:0 -2px 0 rgba(171,133,95,.10);
-}
-#picker .fd-tabs > .on::before {content:"✤";font-size:12px;color:#bc8b50;margin-right:7px;}
 #picker .fd-body {
   position:relative;border:0;border-radius:0;background:transparent;
   color:var(--nb-ink);padding:0 2px;
@@ -127,21 +93,7 @@
   text-shadow:0 1px 0 rgba(255,255,255,.8);
 }
 #picker .fd-body p {
-  color:#83665d;font-size:12.5px;line-height:1.85;max-width:calc(100% - 62px);
-}
-#picker .nb-postmark {
-  position:absolute;right:27px;top:9px;
-  display:flex;align-items:center;pointer-events:none;opacity:.65;
-}
-#picker .nb-postmark .nb-stamp-ring {
-  width:52px;height:52px;border:2px dashed #b88d6c;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  transform:rotate(-11deg);font-size:28px;color:#b28572;
-}
-#picker .nb-postmark .nb-lines {
-  width:32px;height:35px;margin-left:-3px;
-  background:repeating-radial-gradient(ellipse at 0 50%,transparent 0 6px,#b89174 7px 8px,transparent 9px 14px);
-  opacity:.7;
+  color:#83665d;font-size:12.5px;line-height:1.85;max-width:100%;
 }
 #picker .vsel {margin-top:16px;}
 #picker .vsel::before {
@@ -173,10 +125,6 @@
 #picker .scard > .in {
   position:relative;min-height:165px;padding:16px 15px 15px;
   border:1px dashed #bf905f;outline:none;border-radius:9px;
-}
-#picker .scard > .in::after {
-  content:"❀";position:absolute;right:10px;bottom:5px;z-index:0;
-  color:#a58aab;font-size:39px;opacity:.6;pointer-events:none;
 }
 #picker .pols {
   display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;
@@ -264,41 +212,20 @@
   background:linear-gradient(125deg,#e6c89d,#bfa2bb);
   border-radius:0 13px 13px 0;border-left:2px dashed #fff8ec;min-width:49px;
 }
-#picker .tk::before {
-  content:"";pointer-events:none;position:absolute;left:-23px;top:15px;
-  width:22px;height:18px;
-  background:radial-gradient(ellipse at 25% 50%,transparent 34%,#987294 36%,#987294 45%,transparent 47%),
-    radial-gradient(ellipse at 75% 50%,transparent 34%,#987294 36%,#987294 45%,transparent 47%);
-  transform:rotate(14deg);
-}
 /* 花枝與貓剪影是純向量、不能點擊，避開操作區。 */
-#picker .nb-flower {
-  position:absolute!important;left:0;bottom:0;width:98px;height:95px;
-  pointer-events:none;z-index:0!important;opacity:.90;
-}
-#picker .nb-cat {
-  position:absolute!important;right:10px;bottom:4px;width:52px;height:67px;
-  pointer-events:none;z-index:0!important;opacity:.32;
-}
 #picker .install {
   margin-top:21px;color:#855b94;font-size:12.5px;text-align:center;position:relative;z-index:2;
 }
 #picker .foot {margin-top:9px;color:#9c7a97;font-size:12px;text-align:center;position:relative;z-index:2;}
 @media (max-width:520px) {
   #picker {padding:53px 21px 15px;}
-  #picker .sheet {max-height:calc(100dvh - 72px);padding:42px 16px 20px 29px;border-radius:17px;}
+  #picker .sheet {max-height:calc(100dvh - 72px);padding:32px 16px 20px 16px;border-radius:17px;}
   #picker .nb-book::before {inset:-8px -6px -7px -7px;border-radius:20px;}
-  #picker .nb-rings {left:-18px;top:57px;bottom:33px;width:40px;}
-  #picker .nb-rings span {width:37px;height:15px;border-width:3px;}
-  #picker .nb-rings span::after {width:20px;left:4px;top:-2px;}
   #picker .nb-bookmark {right:12px;width:28px;height:65px;font-size:17px;}
   #picker .nb-bookmark::after {font-size:17px;}
   #picker .fd-head {margin-bottom:10px;}
-  #picker .fd-tabs {top:-42px;}
-  #picker .fd-tabs > .on {font-size:12px;padding:7px 15px;}
   #picker .fd-body h2 {font-size:20px;margin-bottom:6px;}
-  #picker .fd-body p {max-width:calc(100% - 44px);font-size:11.3px;line-height:1.65;}
-  #picker .nb-postmark {right:7px;top:8px;transform:scale(.74);transform-origin:right top;}
+  #picker .fd-body p {max-width:100%;font-size:11.3px;line-height:1.65;}
   #picker .vsel {margin-top:12px;}
   #picker .vsel select {min-height:42px;font-size:13px;}
   #picker .scard {margin-top:15px;padding:4px;}
@@ -319,8 +246,6 @@
   #picker .tk .s {min-width:43px;}
   #picker .install {margin-top:17px;font-size:11.5px;}
   #picker .foot {font-size:11px;}
-  #picker .nb-flower {width:68px;height:68px;}
-  #picker .nb-cat {width:39px;height:50px;}
   #picker .nb-edge-tabs {right:-13px;width:23px;}
   #picker .nb-edge-tabs span {width:25px;height:35px;}
 }
