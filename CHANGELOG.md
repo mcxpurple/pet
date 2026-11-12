@@ -74,3 +74,19 @@
 - **特別注意**：個別大小的「⋯」按鈕本次沒有做成空殼，之後應與功能一起上線；浮層由拍立得旁向下展開。
 - 視覺效能：沒有持續性裝飾動畫；所有花枝／貓剪影用內嵌 SVG，沒有外部新素材。
 - 驗收：靜態程式碼與 DOM 結構已比對；真實瀏覽器的手機尺寸與視覺需在網頁部署後人工確認。
+
+
+## 2026-11-12｜網頁版手帳 UI 精簡（依玩家實際網頁截圖標 X）
+
+### 修改範圍
+- `index.html`：移除 `.nb-rings` 活頁扣、重複的 `.fd-tabs`「選擇角色」頁籤、`.nb-postmark` 郵戳、`.nb-flower` 花枝、`.nb-cat` 貓剪影；`notebook-ui.css` 快取參數升至 `?v=2`。
+- `notebook-ui.css`：刪除上述裝飾樣式和選角方格右下角的 `.scard > .in::after` 花形、開始散步票券左邊的 `.tk::before` 裝飾；移除原本為左側扣環預留的非對稱內距，桌面改 `38px 25px 27px 25px`、手機改 `32px 16px 20px 16px`；保持右側紫色書籤／標籤、紙張紋理、拍立得與票券式按鈕。
+- `CHANGELOG.md`：本交接與單獨還原指引。
+
+### 說明
+- **這次只做視覺刪減**；`pet-engine.js`、`pet-picker.js`、`vh-ui.css` 與網頁操作流程不變；第二批互動功能尚未加入。
+- 保護 `pet-extension.zip`、`version.json`、`install.html`、`roster.yaml`、`files.json`、`pets/`。
+- 修改前 main：`605a889192f3013b7163a3ea3e95aae75f8999ff`。
+- 備份：[backup/pre-remove-notebook-rings-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-remove-notebook-rings-20261112)。
+- 本次 PR 合併後，如需回復此 UI 精簡，可單獨 Revert 本次 PR；不要 Reset main，避免覆蓋後續修改。
+- 此次依據是真實網站的玩家截圖修正；**不以 AI 生圖充當 HTML/CSS 渲染驗收**。
