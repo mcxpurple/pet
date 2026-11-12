@@ -17,7 +17,6 @@
   display:block;
   object-fit:contain;
   -webkit-user-drag:none;
-  filter:drop-shadow(0 0 1px rgba(48,47,45,.25));
 }
 .qseason-ground {
   animation-name:qseason-ground-fade;
@@ -25,7 +24,8 @@
 .qseason-firefly {
   border-radius:50%;
   background:#ffed9b;
-  box-shadow:0 0 5px 2px rgba(255,233,123,.68),0 0 12px 3px rgba(246,242,145,.34);
+  box-shadow:0 0 var(--glow-blur,5px) var(--glow-spread,2px) rgba(255,233,123,.68),
+    0 0 var(--glow-halo,12px) var(--glow-halo-spread,3px) rgba(246,242,145,.34);
   animation-name:qseason-firefly;
 }
 @keyframes qseason-scatter {

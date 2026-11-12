@@ -6,10 +6,18 @@
 (function () {
   'use strict';
 
-  const MAX_PARTICLES = 6;
   const BOTTOM_ZONE = 125;
-  const PARTICLE_MIN_MS = 2700;
-  const PARTICLE_MAX_MS = 4100;
+  const PARTICLE_MIN_MS = 4000;
+  const PARTICLE_MAX_MS = 5500;
+  // Responsive density, recalculated every tick (including when the viewport is resized).
+  // The cap is shared by all pets; it is never multiplied by the number of pets.
+  function particleSettings() {
+    const width = window.innerWidth;
+    if (width <= 600) return { max: 6, minMs: 800, maxMs: 1200 };
+    if (width <= 1100) return { max: 8, minMs: 650, maxMs: 950 };
+    if (width <= 1600) return { max: 10, minMs: 500, maxMs: 850 };
+    return { max: 12, minMs: 450, maxMs: 750 };
+  }
   const random = (a, b) => a + Math.random() * (b - a);
   const choose = a => a[Math.floor(Math.random() * a.length)];
   const live = new Set();
@@ -188,13 +196,18 @@
     const relativeSize = (low, high, minPx, maxPx) =>
       Math.min(maxPx, Math.max(minPx, petHeight * random(low, high)));
 
-    let el, size, ground = false;
+    let el, size, ground = false, item = null, pale = false;
     if (type === 'firefly') {
       el = document.createElement('span');
       el.className = 'qseason-particle qseason-firefly';
-      size = random(3, 5.5);
+      // Mostly tiny glimmers, occasionally larger glowing fireflies.
+      size = Math.random() < .70 ? random(2.5, 4.7) : random(4.8, 7.5);
+      // Scale each halo with its firefly, so small dots stay visibly smaller.
+      el.style.setProperty('--glow-blur', (size * .95).toFixed(1) + 'px');
+      el.style.setProperty('--glow-spread', (size * .30).toFixed(1) + 'px');
+      el.style.setProperty('--glow-halo', (size * 2.2).toFixed(1) + 'px');
+      el.style.setProperty('--glow-halo-spread', (size * .45).toFixed(1) + 'px');
     } else {
-      let item = null;
       if (loaded.ground.length && Math.random() < .08) {
         item = chooseWeighted(loaded.ground);
         ground = true;
@@ -211,9 +224,13 @@
       el.draggable = false;
       el.style.pointerEvents = 'none';
       el.src = item.file;
+      pale = /(?:tung-flower|taiwan-lily|taiwan-azalea|lotus|snowflake|plum-|dandelion-)/.test(item.file);
       size = ground ? relativeSize(.11, .15, 19, 32)
-        : item.group === 'full' ? relativeSize(.12, .15, 20, 32)
-        : relativeSize(.09, .125, 15, 25);
+        : item.group === 'full' ? relativeSize(.13, .17, 22, 36)
+        : relativeSize(.095, .135, 17, 28);
+      // Transparent padding around pale PNGs makes their actual flowers appear small.
+      // Enlarge their rendered boxes slightly, without changing or outlining the artwork.
+      if (pale && !ground) size = Math.min(41, size * 1.12);
     }
 
     const x = Math.max(14, Math.min(width - 14, rect.left + rect.width * random(.17, .83)));
@@ -226,11 +243,16 @@
     el.style.width = size + 'px';
     el.style.height = size + 'px';
     el.style.setProperty('--duration', duration + 'ms');
-    el.style.setProperty('--peak-opacity', random(.52, .83).toFixed(2));
-    el.style.setProperty('--dx', random(-42, 42).toFixed(1) + 'px');
+    el.style.setProperty('--peak-opacity',
+      random(pale ? .95 : .80, pale ? 1 : .95).toFixed(2));
+    const isSeed = !!item && item.file.endsWith('/dandelion-seed.png');
+    const drift = isSeed ? 72 : type === 'firefly' ? 65 : 42;
+    el.style.setProperty('--dx', random(-drift, drift).toFixed(1) + 'px');
     const rise = type === 'firefly'
-      ? Math.min(270, Math.max(45, petHeight * random(.45, 1.10)))
-      : Math.min(285, Math.max(70, petHeight * random(.70, 1.20)));
+      ? Math.min(400, Math.max(75, petHeight * random(.85, 1.70)))
+      : isSeed
+        ? Math.min(400, Math.max(110, petHeight * random(1.20, 1.80)))
+        : Math.min(285, Math.max(70, petHeight * random(.70, 1.20)));
     el.style.setProperty('--dy', (-rise).toFixed(1) + 'px');
     el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
     // 新 DOM 先插入。z-index 由 CSS 保證：粒子 -1，動物 0，桌寵引擎 1。
@@ -484,7 +506,8 @@
       const picker = document.getElementById('picker');
       const off = document.hidden || reducedMotion.matches || (picker && !picker.hidden);
       if (off) clearParticles();
-      if (!off && live.size < MAX_PARTICLES) {
+      const density = particleSettings();
+      if (!off && live.size < density.max) {
         const pets = Array.from(stage.querySelectorAll('.qpet')).filter(p => {
           const r = p.getBoundingClientRect();
           return r.width > 0 && r.bottom >= window.innerHeight - BOTTOM_ZONE &&
@@ -492,7 +515,7 @@
         });
         if (pets.length) spawn(stage, theme, choose(pets));
       }
-      window.setTimeout(tick, !off ? random(950, 1650) : 4500);
+      window.setTimeout(tick, !off ? random(density.minMs, density.maxMs) : 4500);
     }
 
     document.addEventListener('visibilitychange', () => {

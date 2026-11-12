@@ -1,3 +1,27 @@
+## 2026-11-12｜網頁版季節微景：響應式密度、淡色清晰度、蒲公英與螢火蟲增高
+
+依玩家實際錄影回饋：原本所有視窗最多六顆、每 950–1650ms 才嘗試生成、約 2.7–4.1 秒就淡出，寬螢幕顯得稀疏；淡色水彩素材因透明留白及低不透明度而不易辨識。
+
+### 此次修改
+- `seasonal-micro-scene.js`：在 `particleSettings()` 根據 **`window.innerWidth`** 每次 tick 重算（視窗縮放後不需重載），所有桌寵共用上限，不依角色數倍增：
+  - 寬度 ≤600px：同時最多 6 顆，間隔 800–1200ms。
+  - 寬度 601–1100px：最多 8 顆，間隔 650–950ms。
+  - 寬度 1101–1600px：最多 10 顆，間隔 500–850ms。
+  - 寬度 >1600px：最多 12 顆，間隔 450–750ms。
+- 粒子存活延長至 **4–5.5 秒**；一般水彩的最高不透明度從 52–83% 提至 **80–95%**；淡色品種（油桐、台灣百合、台灣杜鵑、蓮花、梅花、雪晶、蒲公英）提至 **95–100%**，並略放大畫面盒子 **12%**。一般整朵／整葉約 22–36px，花瓣／碎片約 17–28px，淡色品種依此再稍放大；沒有重新輸出 PNG。
+- `dandelion-seed.png` **單顆種子**上升至角色高度 **120–180%**，最多 400px，左右飄移可達 ±72px；`dandelion-puff.png` **整顆絨球**仍只停在腳邊淡出，不跟著飛。
+- 夏夜 CSS 螢火蟲上升至角色高度 **85–170%**（至少 75px、最多 400px），左右漂移可達 ±65px；光點尺寸採 **70% 小光點（2.5–4.7px）／30% 較大光點（4.8–7.5px）**，每個光暈半徑隨光點大小同步變動。
+- `seasonal-micro-scene.css`：移除水彩圖既有的 `drop-shadow`，尊重無額外陰影需求；只保留螢火蟲自身發光的 CSS 光暈。
+- `index.html`：**只**更新季節檔案快取：CSS `?v=3`→`?v=4`、JS `?v=6`→`?v=7`。追加本 CHANGELOG。
+
+### 保護與還原
+- **完全不動**季節動物的 `ANIMAL_CHANCE = 0.2`、`ANIMAL_INTERVAL_MIN = 60`、3 分鐘首次抽選、隱藏分頁暫停、四隻動物的動畫／點擊行為；不改 `pet-engine.js`、`pet-picker.js`、`pet-extension.zip`、`version.json`、`pets/` 及任何 PNG。
+- 備份：[backup/pre-seasonal-density-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-density-20261112)，基準 SHA `b8d0546da35cb5d9361101a4913bb27d8a015fdc`。
+- 只需 Revert 本次密度調整的 PR 即可回復，不要 Reset 整個 main。
+- 功能由靜態／模擬測試檢查；真實瀏覽器背景對比與 Console 仍需部署後人工驗收。
+
+---
+
 ## 2026-11-12｜網頁版季節水彩 PNG 與台灣動物彩蛋（GPT-6）
 
 **範圍**：`seasonal-micro-scene.js`、`seasonal-micro-scene.css`、`assets/seasonal/README.md`、`index.html` 的季節快取參數及本 CHANGELOG。**保持不變**：`pet-engine.js`、`pet-picker.js`、`pet-extension.zip`、`version.json`、`pets/`；此任務沒有修改動物 PNG。
