@@ -82,7 +82,8 @@
     el.style.setProperty('--duration', duration + 'ms');
     el.style.setProperty('--peak-opacity', random(.52, .83).toFixed(2));
     el.style.setProperty('--dx', random(-42, 42).toFixed(1) + 'px');
-    el.style.setProperty('--dy', (-random(type === 'firefly' ? 12 : 17, type === 'firefly' ? 34 : 43)).toFixed(1) + 'px');
+    // 2026-11-12 微調：從腳邊向上飄至角色身體周圍，仍不從畫面頂端落下。
+    el.style.setProperty('--dy', (-random(type === 'firefly' ? 45 : 65, type === 'firefly' ? 85 : 110)).toFixed(1) + 'px');
     el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
     stage.appendChild(el);
     live.add(el);
