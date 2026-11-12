@@ -202,6 +202,11 @@
       el.className = 'qseason-particle qseason-firefly';
       // Mostly tiny glimmers, occasionally larger glowing fireflies.
       size = Math.random() < .70 ? random(2.5, 4.7) : random(4.8, 7.5);
+      // Scale each halo with its firefly, so small dots stay visibly smaller.
+      el.style.setProperty('--glow-blur', (size * .95).toFixed(1) + 'px');
+      el.style.setProperty('--glow-spread', (size * .30).toFixed(1) + 'px');
+      el.style.setProperty('--glow-halo', (size * 2.2).toFixed(1) + 'px');
+      el.style.setProperty('--glow-halo-spread', (size * .45).toFixed(1) + 'px');
     } else {
       if (loaded.ground.length && Math.random() < .08) {
         item = chooseWeighted(loaded.ground);
