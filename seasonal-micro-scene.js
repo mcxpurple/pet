@@ -35,16 +35,24 @@
     if (rect.width <= 0 || rect.bottom < height - BOTTOM_ZONE || rect.top > height) return;
     const el = document.createElement('span');
     el.className = 'qseason-particle';
-    let size = random(12, 19);
+    // 配合引擎 Pet.resize() 的實際像素高度。offsetHeight 不受走路翻轉／旋轉動畫影響；
+    // rect.height 僅作備援。依比例放大但設上下限，避免手機太小或大螢幕粒子過大。
+    const petHeight = pet.offsetHeight || rect.height;
+    const relativeSize = (low, high, minPx, maxPx) =>
+      Math.min(maxPx, Math.max(minPx, petHeight * random(low, high)));
+    let size = 0;
 
     if (type === 'plum') {
       el.classList.add('qseason-plum');
+      size = relativeSize(.10, .14, 15, 30);
       el.textContent = choose(['✿', '❀']);
     } else if (type === 'cherry') {
       el.classList.add('qseason-cherry');
+      size = relativeSize(.10, .14, 15, 30);
       el.textContent = choose(['❀', '✿']);
     } else if (type === 'tung') {
       el.classList.add('qseason-tung');
+      size = relativeSize(.10, .14, 15, 30);
       el.textContent = '✿';
     } else if (type === 'firefly') {
       el.classList.add('qseason-firefly');
@@ -54,14 +62,14 @@
     } else if (type === 'autumn') {
       if (Math.random() < .5) {
         el.classList.add('qseason-maple');
-        size = random(12, 17);
+        size = relativeSize(.11, .15, 16, 32);
         el.style.width = size + 'px';
         el.style.height = size + 'px';
         // 內嵌 SVG 暖紅楓葉：與銀杏採同一方式，不依賴 emoji 或遠端素材。
         el.innerHTML = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 19 8 25 5 24 12 30 14 25 19 27 25 19 23 16 29 13 23 5 25 7 19 2 14 8 12 7 5 13 8Z" fill="#d9673a"/><path d="M16 27V8m0 11-7-6m7 6 7-6" stroke="#a4492a" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>';
       } else {
         el.classList.add('qseason-ginkgo');
-        size = random(13, 18);
+        size = relativeSize(.11, .15, 16, 32);
         el.style.width = size + 'px';
         el.style.height = size + 'px';
         // 固定 SVG，繪出銀杏扇形葉，不依賴遠端圖片。
@@ -70,7 +78,7 @@
     } else if (type === 'snow') {
       el.classList.add('qseason-snow');
       el.textContent = choose(['❄', '✻']);
-      size = random(10, 16);
+      size = relativeSize(.08, .12, 12, 26);
     }
 
     // 依角色目前的位置取座標，但粒子固定於螢幕底部，不跟隨角色飛往上方。
