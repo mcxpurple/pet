@@ -178,3 +178,23 @@
 - 不變：`pet-engine.js` 摸頭判定（900ms 內至少三次方向折返）、`pet-picker.js`、全部 CSS、角色素材、`pet-extension.zip`、`version.json`、`install.html`。
 - 備份：[`backup/pre-headpat-help-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-headpat-help-20261112)；只需 Revert 本次說明 PR 即可單獨還原。
 - 交接 Claude：明天若同步擴充功能的選角頁，請一併補上相同的摸頭操作提示；這次不修改 ZIP。
+
+
+## 2026-11-12｜季節微景跟隨角色大小（網頁版，GPT-6）
+
+玩家實際操作網頁後回饋：季節落葉與花瓣相對桌寵偏小。本次只調整季節圖案的**尺寸計算**，讓不同全域與個別角色倍率自動對應合適的粒子尺寸，不用改引擎、角色素材或圖片。
+
+- `seasonal-micro-scene.js` L31–43：在 `spawn(stage, type, pet)` 讀取 `pet.offsetHeight` 作為角色的實際 CSS 像素高度（不受目前角色翻轉、旋轉等 transform 影響）；必要時回退至 `getBoundingClientRect().height`。新增局部 `relativeSize(low, high, minPx, maxPx)`，先以角色高度乘隨機比例，再依尺寸上下限裁切。
+- L45–56：梅花、櫻花、桐花改成角色高度的 **10%～14%**，限制 **15～30px**。
+- L62–76：楓葉、銀杏 SVG 改成角色高度的 **11%～15%**，限制 **16～32px**；SVG 本身、顏色、圖層均不變。
+- L78–82：雪花改成角色高度的 **8%～12%**，限制 **12～26px**。
+- L57–61：螢火蟲仍為 **3～5.5px**，刻意不跟著放大，避免光球過大。
+- L84–103：保留原本隨角色腳邊生成、升起淡出、最多六顆、`stage.insertBefore(el, stage.firstChild)` 的角色後方圖層設定。
+- `index.html` L19：網頁季節 JS 快取升至 `seasonal-micro-scene.js?v=4`；季節 CSS 無需改動（維持 `?v=2`）。
+- 新 engine API、opts、localStorage：**無**；`pet-engine.js`、`pet-picker.js`、`seasonal-micro-scene.css` 不更動。
+- 自動化測試：JS 語法與模擬 DOM 的六種季節粒子／100、120、180、240px 角色高度、比例上下限與螢火蟲固定尺寸，共 **42 種案例通過**。尚未以實際瀏覽器畫面驗收視覺，不使用 AI 生成圖片假充實際畫面。
+- 版本保護：`pet-extension.zip`、`version.json`、`install.html`、`roster.yaml`、`files.json`、`pets/` 不修改；合併後核對 SHA。
+- 備份分支：[`backup/pre-seasonal-proportional-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-proportional-20261112)。
+- 單獨還原：在 GitHub Revert 本次 PR；或僅還原 `seasonal-micro-scene.js` 的尺寸公式，並更新 `index.html` 的季節 JS 快取字串。**不要 Reset main**，以免刪除後續素材及功能。
+- Claude 交接：季節微景依舊是**網頁版獨立檔案**，不在共享引擎中；如明天同步 Chrome 擴充功能，評估是否要另行引入這套季節 JS。角色引擎原本全域／個別大小已反映在 `.qpet` 的 `offsetHeight`，不必增加新的 World 介面。
+
