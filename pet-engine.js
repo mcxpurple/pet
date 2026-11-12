@@ -4,10 +4,11 @@
  * 保留所有權利，未經同意請勿複製、修改或用於其他專案。
  * https://www.threads.com/@mcx_purple
  */
-/* Q版桌寵引擎 v0.8｜網頁版與擴充功能共用
+/* Q版桌寵引擎 v0.9｜網頁版與擴充功能共用
    用法：const world = new QPet.World(stageElement, { max });
          world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] }
          world.setSize('小' | '中' | '大');     // 玩家選擇的角色大小，立即生效
+         world.setPetScale(id, .85 | 1 | 1.15); // 個別角色大小，立即生效
          world.callTo(clientX);                // 叫最近的角色小跑步過來
    選項：opts.once(key) → Promise<boolean>，同一 key 第一次呼叫回傳 true（吃飯提醒一天一次用；預設存在 localStorage） */
 (function (global) {
@@ -131,8 +132,10 @@
     /* 依視窗高度與玩家選擇的大小重新計算尺寸 */
     resize() {
       const cx = this.w ? this.x + this.w / 2 : null;
-      const base = Math.min(SIZE_MAX, Math.max(SIZE_MIN, global.innerHeight * (SIZE_PCT[this.w0.size] || SIZE_PCT['中'])));
-      this.h = Math.round(base * (this.c.size || SIZE_BASE) / SIZE_BASE);
+      // 全域大小 × 名冊 size × 個別倍率，最終仍受 100–240px 上下限保護。
+      const height = global.innerHeight * (SIZE_PCT[this.w0.size] || SIZE_PCT['中']) *
+        (this.c.size || SIZE_BASE) / SIZE_BASE * this.w0.getPetScale(this.c.id);
+      this.h = Math.round(Math.min(SIZE_MAX, Math.max(SIZE_MIN, height)));
       this.w = Math.round(this.h / ASPECT);
       this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
       const dpr = global.devicePixelRatio || 1;
@@ -506,6 +509,16 @@
   class World {
     constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
+      // 分角色倍率使用 pet_size_each，允許 0.85 / 1 / 1.15，預設標準。
+      this.petScales = Object.create(null);
+      try {
+        const saved = JSON.parse(localStorage.getItem('pet_size_each') || '{}');
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+          Object.entries(saved).forEach(([id, value]) => {
+            if ([.85, 1, 1.15].includes(Number(value))) this.petScales[id] = Number(value);
+          });
+        }
+      } catch { /* 無 localStorage（例如隱私模式）時使用預設值 */ }
       this.slot = slotNow(); this.slotT = 0; this.fest = festNow();
       this.watchMouse = opts.watchMouse !== false;  // 未指定時預設開啟；擴充功能可 opt-out
       this.mouseThrottleAt = 0; this.mousePoint = null;
@@ -536,6 +549,18 @@
     setSize(mode) {
       this.size = SIZE_PCT[mode] ? mode : '中';
       this.pets.forEach(p => p.resize());
+    }
+    /* 個別大小 API：new QPet.World(stage,{max}) 舊呼叫完全相容。
+       調整時保留角色中心 X，沿用 Pet.resize() 的 ground() 腳底對齊。 */
+    getPetScale(id) { return this.petScales[String(id)] || 1; }
+    setPetScale(id, factor) {
+      const scale = Number(factor);
+      if (!id || ![.85, 1, 1.15].includes(scale)) return false;
+      if (scale === 1) delete this.petScales[String(id)];
+      else this.petScales[String(id)] = scale;
+      try { localStorage.setItem('pet_size_each', JSON.stringify(this.petScales)); } catch {}
+      this.pets.filter(p => String(p.c.id) === String(id)).forEach(p => p.resize());
+      return true;
     }
     /* 偷看滑鼠：只收 document pointermove，100ms 節流；不影響拖曳、睡覺與帶目標移動。
        滑鼠位置只存在記憶體，不寫入 localStorage。opts.watchMouse=false 可完全停用。 */

@@ -12,11 +12,11 @@
 <title>Q版桌寵</title>
 <link rel="stylesheet" href="vh-ui.css?v=0.8">
 <!-- GPT-6 2026-11-12：僅網頁版季節微景；不影響下載版 ZIP，還原見 CHANGELOG.md -->
-<link rel="stylesheet" href="seasonal-micro-scene.css?v=1">
+<link rel="stylesheet" href="seasonal-micro-scene.css?v=2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-<script src="pet-engine.js?v=0.8"></script>
-<script src="pet-picker.js?v=0.8"></script>
-<script defer src="seasonal-micro-scene.js?v=2"></script>
+<script src="pet-engine.js?v=0.9"></script>
+<script src="pet-picker.js?v=0.9"></script>
+<script defer src="seasonal-micro-scene.js?v=3"></script>
 <style>
   /* 背景依時段切換，與 VH 相同：late 00–06 窗台月亮｜day 06–16 森林鐵軌｜dusk 16–19 海邊傍晚｜night 19–24 棧橋星空
      --bg-img 由下方 applyBg() 設定；深淺色只決定霧的顏色 */
@@ -39,7 +39,7 @@
   #loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; z-index: 40; }
 </style>
 <!-- 網頁專用：收藏手帳造型；不影響共用 vh-ui.css 或 Chrome ZIP -->
-<link rel="stylesheet" href="notebook-ui.css?v=2">
+<link rel="stylesheet" href="notebook-ui.css?v=3">
 </head>
 <body class="vh">
 <script>
@@ -120,6 +120,10 @@
 
   function openPicker() {
     ui = QPet.picker({ select: $('group'), grid: $('grid'), picked: $('picked'), roster, pick: current, max: 4,
+      // 網頁版才啟用「⋯」個別大小面板；擴充功能仍可沿用舊 picker 呼叫。
+      scaleControls: true,
+      getPetScale: id => world.getPetScale(id),
+      onPetScale: (id, factor) => world.setPetScale(id, factor),
       onChange: p => { $('go').disabled = !p.length; } });
     $('go').disabled = !ui.pick.length;
     $('picker').hidden = false; $('switch').hidden = true;

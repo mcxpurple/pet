@@ -10,6 +10,27 @@
   function picker(o) {
     const max = o.max || 2;
     const st = { pick: (o.pick || []).filter(id => o.roster.some(c => c.id === id)).slice(0, max) };
+    // 個別大小的 UI 是 opt-in，舊的 QPet.picker 呼叫方式維持原樣。
+    const scaleUI = o.scaleControls === true && typeof o.onPetScale === 'function' && typeof o.getPetScale === 'function';
+    const scaleChoices = [{ text: '小', factor: .85 }, { text: '標準', factor: 1 }, { text: '大', factor: 1.15 }];
+    let openScaleId = null;
+    // 多次開啟選角畫面時，清除上次 picker 綁定的 document 監聽。
+    if (typeof o.grid._qpetScaleCleanup === 'function') o.grid._qpetScaleCleanup();
+    if (scaleUI) {
+      const outside = e => {
+        if (openScaleId != null && !o.grid.contains(e.target)) { openScaleId = null; renderGrid(); }
+      };
+      const onEscape = e => {
+        if (e.key === 'Escape' && openScaleId != null) { openScaleId = null; renderGrid(); }
+      };
+      document.addEventListener('pointerdown', outside);
+      o.grid.addEventListener('keydown', onEscape);
+      o.grid._qpetScaleCleanup = () => {
+        document.removeEventListener('pointerdown', outside);
+        o.grid.removeEventListener('keydown', onEscape);
+        delete o.grid._qpetScaleCleanup;
+      };
+    }
     const groups = [];
     o.roster.forEach(c => { if (!groups.includes(c.group)) groups.push(c.group); });
     const first = st.pick.length ? o.roster.find(c => c.id === st.pick[0]).group : groups[0];
@@ -21,9 +42,10 @@
       o.select.appendChild(op);
     });
     o.select.value = first;
-    o.select.onchange = renderGrid;
+    o.select.onchange = () => { openScaleId = null; renderGrid(); };
 
     function toggle(id) {
+      openScaleId = null;
       const i = st.pick.indexOf(id);
       if (i >= 0) st.pick.splice(i, 1);
       else { if (st.pick.length >= max) st.pick.shift(); st.pick.push(id); }
@@ -32,6 +54,7 @@
     }
     function renderGrid() {
       o.grid.innerHTML = '';
+      o.grid.classList.toggle('pols-with-scale', scaleUI);
       o.roster.filter(c => c.group === o.select.value).forEach(c => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'pol'; b.setAttribute('aria-pressed', String(st.pick.includes(c.id)));
@@ -43,7 +66,61 @@
         const i = st.pick.indexOf(c.id);
         if (i >= 0) { const s = document.createElement('span'); s.className = 'seal'; s.textContent = i + 1; b.appendChild(s); }
         b.onclick = () => toggle(c.id);
-        o.grid.appendChild(b);
+        if (!scaleUI) { o.grid.appendChild(b); return; }
+
+        // 已選拍立得的外框右下角：膠囊「⋯」按鈕，選單固定往下開。
+        const slot = document.createElement('div'); slot.className = 'pol-slot';
+        slot.appendChild(b);
+        if (i >= 0) {
+          const more = document.createElement('button');
+          more.type = 'button'; more.className = 'pol-more';
+          more.textContent = '⋯';
+          more.title = c.name + ' 的個別大小';
+          more.setAttribute('aria-label', c.name + ' 的個別大小');
+          more.setAttribute('aria-haspopup', 'true');
+          more.setAttribute('aria-expanded', String(openScaleId === c.id));
+          more.onclick = e => {
+            e.stopPropagation();
+            openScaleId = openScaleId === c.id ? null : c.id;
+            renderGrid();
+            const focused = o.grid.querySelector('.pol-more[aria-expanded="true"]');
+            if (focused) focused.focus();
+          };
+          slot.appendChild(more);
+          if (openScaleId === c.id) {
+            slot.classList.add('is-scale-open');
+            const popup = document.createElement('div');
+            popup.className = 'pol-size-menu';
+            popup.setAttribute('role', 'group');
+            popup.setAttribute('aria-label', c.name + ' 個別大小');
+            const caption = document.createElement('div');
+            caption.className = 'pol-size-title';
+            caption.textContent = c.name + '・個別大小';
+            const row = document.createElement('div');
+            row.className = 'seg pol-size-options';
+            const current = o.getPetScale(c.id);
+            scaleChoices.forEach(({ text, factor }) => {
+              const option = document.createElement('button');
+              option.type = 'button'; option.textContent = text;
+              option.setAttribute('aria-pressed', String(Math.abs(Number(current) - factor) < .001));
+              option.onclick = e => {
+                e.stopPropagation();
+                o.onPetScale(c.id, factor);
+                openScaleId = null;
+                renderGrid();
+              };
+              row.appendChild(option);
+            });
+            popup.append(caption, row);
+            slot.appendChild(popup);
+          }
+        }
+        o.grid.appendChild(slot);
+        // 不論在最後一列或手機窄螢幕，都只往下開；左右僅做防裁切對齊。
+        const popup = slot.querySelector('.pol-size-menu');
+        if (popup && slot.getBoundingClientRect().left + 190 > o.grid.getBoundingClientRect().right) {
+          popup.classList.add('align-right');
+        }
       });
     }
     function renderPicked() {
