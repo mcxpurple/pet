@@ -330,3 +330,29 @@
 - 程式語法與依最終 70～120%／45～110% 公式進行的模擬檢查通過；**尚未宣稱真實 Chrome 畫面驗收**。
 - 修改前備份：[backup/pre-seasonal-height-scale-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-height-scale-20261112)。
 - 單獨還原：Revert 本次 PR；不要 Reset main。Claude 後續同步擴充功能時，如有引入季節獨立檔，應同步本次垂直距離比例。
+
+## 2026-11-13｜擴充功能 v0.8.0 同步與新功能（Claude）
+修改前 main：`cde4dfc`｜備份分支：`backup/pre-ext-080-20261113`
+
+### 共用引擎 pet-engine.js（v0.9 → v1.0，向下相容）
+- 個別大小改為可注入儲存：`opts.petScales` 初始值、`opts.saveScales(map)` 自訂儲存；未提供時沿用 localStorage `pet_size_each`（網頁版行為不變）
+- 新增 `world.setPetScales(map)`：一次套用全部個別大小、不觸發儲存
+- 新增被捲動嚇到：`world.startle()` → 每隻 `Pet.startle()`，定住彈一下、有 click 圖用 click 圖、冒驚嘆號，接著小跑幾步或左右張望；每隻冷卻 20–40 秒；睡覺、拖曳、吃東西等狀態不觸發
+- index.html 引擎快取 `?v=1.0`
+
+### 網頁版外觀
+- notebook-ui.css：「開始散步」票根去除虛線，右側改灰紫（同右上角膠囊），腳印改灰階；index.html 腳印包進 `<i>`；快取 `?v=7`
+- install.html：名稱改陪伴桌寵
+
+### 擴充功能 pet-extension.zip（0.7.0 → 0.8.0）
+- 名稱改「陪伴桌寵」；新增權限 activeTab（讀取目前分頁網址，無額外警告）；新增快捷鍵指令 toggle-pets（Alt+Shift+P）
+- 同步網頁版引擎與 pet-picker.js：偷看滑鼠、歡迎回來、個別大小
+- 新增 seasonal.js：由網頁版 seasonal-micro-scene.js 自動移植，差異為圖片經背景程式取得後畫在 canvas（不受網站安全政策阻擋）、樣式注入 Shadow DOM、動物彩蛋每小時抽選改存 chrome.storage `animal: {win, due}`，所有分頁共用（時鐘為實際時間，非分頁可見時間）
+- content.js：個別大小存 chrome.storage `sizeEach`；指定網站不出現 `blockSites`（主機名稱，www. 視為同站）；快速捲動偵測（0.3 秒內超過約 1.2 個視窗高度）
+- background.js：快捷鍵切換 `enabled`
+- 主畫面：新配色（網頁版收藏手帳的奶油紙＋霧紫，不使用虛線）、快捷鍵提示、目前網站隱藏／恢復與已隱藏清單、目前角色的個別大小按鈕、票根按鈕；說明文字對齊網頁版
+- 擴充功能 storage 鍵：pick、enabled、size、sizeEach、blockSites、animal、meal
+
+### 還原
+- 整批：在 GitHub 對本次提交按 Revert，或把 main 的檔案從備份分支 `backup/pre-ext-080-20261113` 取回
+- 只還原網頁票根外觀：Revert notebook-ui.css 與 index.html 的 `<i>🐾</i>` 變更

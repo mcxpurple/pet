@@ -202,15 +202,18 @@
 }
 #picker .tk .f {
   min-width:161px;padding:9px 17px;
-  border:2px dashed #b99169;border-radius:13px 0 0 13px;
+  border:1.5px solid #d9bf9c;border-right:0;border-radius:13px 0 0 13px; /* 2026-11-13：去除虛線 */
   background:radial-gradient(circle at 100% 0,rgba(187,147,172,.14),transparent 40%),
     repeating-linear-gradient(0deg,rgba(154,114,97,.04) 0 1px,transparent 1px 4px),#fff5e8;
 }
 #picker .tk .t {font-size:19px;color:#603e43;}
 #picker .tk .en {color:#956c92;}
 #picker .tk .s {
-  background:linear-gradient(125deg,#e6c89d,#bfa2bb);
-  border-radius:0 13px 13px 0;border-left:2px dashed #fff8ec;min-width:49px;
+  background:linear-gradient(135deg,#a68cad 0%,#967a9e 52%,#856a8d 100%); /* 2026-11-13：票根改灰紫，同右上角膠囊 */
+  border-radius:0 13px 13px 0;border-left:1.5px solid #fff8ec;min-width:49px;
+}
+#picker .tk .s {font-size:22px;}
+#picker .tk .s i {font-style:normal;filter:grayscale(1) brightness(1.75);
 }
 /* 花枝與貓剪影是純向量、不能點擊，避開操作區。 */
 #picker .install {

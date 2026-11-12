@@ -4,11 +4,14 @@
  * 保留所有權利，未經同意請勿複製、修改或用於其他專案。
  * https://www.threads.com/@mcx_purple
  */
-/* Q版桌寵引擎 v0.9｜網頁版與擴充功能共用
+/* Q版桌寵引擎 v1.0｜網頁版與擴充功能共用
    用法：const world = new QPet.World(stageElement, { max });
          world.set([{ cfg, bitmaps }, ...]);   // bitmaps = { 狀態: [ImageBitmap, ...] }
          world.setSize('小' | '中' | '大');     // 玩家選擇的角色大小，立即生效
          world.setPetScale(id, .85 | 1 | 1.15); // 個別角色大小，立即生效
+         world.setPetScales({ id: 倍率 });       // 一次套用全部個別大小，不觸發儲存（擴充功能同步用）
+         world.startle();                       // 被捲動嚇到（擴充功能偵測快速捲動後呼叫）
+   選項：opts.petScales 初始個別大小、opts.saveScales(map) 自訂儲存；未提供時使用 localStorage pet_size_each
          world.callTo(clientX);                // 叫最近的角色小跑步過來
    選項：opts.once(key) → Promise<boolean>，同一 key 第一次呼叫回傳 true（吃飯提醒一天一次用；預設存在 localStorage） */
 (function (global) {
@@ -214,6 +217,20 @@
       this.setMode('stand', .8, 'startle');
       this.w0.fx('驚嘆號', this.cx(), this.y + 4);
       this.next = () => { this.dir *= -1; this.setMode('run', rand(1.6, 2.6)); };
+    }
+    /* 被捲動嚇到：定住彈一下、冒驚嘆號，接著小跑幾步或左右張望；每隻冷卻 20–40 秒 */
+    startle() {
+      const now = performance.now();
+      if (now < (this.startleReadyAt || 0)) return;
+      if (!['walk', 'stand', 'run', 'look', 'follow', 'meet'].includes(this.mode) || this.goal != null || this.edgeOK) return;
+      this.startleReadyAt = now + rand(20000, 40000);
+      this.touch();
+      this.setMode('stand', .7, 'startle');
+      if (this.has('click')) this.showState('click');
+      this.w0.fx('驚嘆號', this.cx(), this.y + 4);
+      this.next = Math.random() < .5
+        ? () => { this.dir = Math.random() < .5 ? 1 : -1; this.setMode('run', rand(.8, 1.4)); }
+        : () => { this.setMode('stand', 1.8, 'look'); this.lookAt = [.45, 1.05]; };
     }
     /* 小跑跌倒 */
     trip() {
@@ -510,15 +527,12 @@
     constructor(stage, opts = {}) {
       this.stage = stage; this.pets = []; this.raf = 0; this.last = 0; this.size = '中';
       // 分角色倍率使用 pet_size_each，允許 0.85 / 1 / 1.15，預設標準。
+      // 擴充功能傳入 opts.petScales／opts.saveScales，改存 chrome.storage，避免寫進各網站的 localStorage。
       this.petScales = Object.create(null);
-      try {
-        const saved = JSON.parse(localStorage.getItem('pet_size_each') || '{}');
-        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
-          Object.entries(saved).forEach(([id, value]) => {
-            if ([.85, 1, 1.15].includes(Number(value))) this.petScales[id] = Number(value);
-          });
-        }
-      } catch { /* 無 localStorage（例如隱私模式）時使用預設值 */ }
+      this.saveScales = typeof opts.saveScales === 'function' ? opts.saveScales : null;
+      let saved = opts.petScales;
+      if (!saved) { try { saved = JSON.parse(localStorage.getItem('pet_size_each') || '{}'); } catch { saved = {}; } }
+      this.loadScales(saved);
       this.slot = slotNow(); this.slotT = 0; this.fest = festNow();
       this.watchMouse = opts.watchMouse !== false;  // 未指定時預設開啟；擴充功能可 opt-out
       this.mouseThrottleAt = 0; this.mousePoint = null;
@@ -553,12 +567,22 @@
     /* 個別大小 API：new QPet.World(stage,{max}) 舊呼叫完全相容。
        調整時保留角色中心 X，沿用 Pet.resize() 的 ground() 腳底對齊。 */
     getPetScale(id) { return this.petScales[String(id)] || 1; }
+    loadScales(map) {
+      this.petScales = Object.create(null);
+      if (map && typeof map === 'object' && !Array.isArray(map)) {
+        Object.entries(map).forEach(([id, value]) => {
+          if ([.85, 1.15].includes(Number(value))) this.petScales[id] = Number(value);
+        });
+      }
+    }
+    setPetScales(map) { this.loadScales(map); this.pets.forEach(p => p.resize()); }
     setPetScale(id, factor) {
       const scale = Number(factor);
       if (!id || ![.85, 1, 1.15].includes(scale)) return false;
       if (scale === 1) delete this.petScales[String(id)];
       else this.petScales[String(id)] = scale;
-      try { localStorage.setItem('pet_size_each', JSON.stringify(this.petScales)); } catch {}
+      if (this.saveScales) this.saveScales({ ...this.petScales });
+      else { try { localStorage.setItem('pet_size_each', JSON.stringify(this.petScales)); } catch {} }
       this.pets.filter(p => String(p.c.id) === String(id)).forEach(p => p.resize());
       return true;
     }
@@ -607,6 +631,11 @@
       if (this.pets.length) { this.last = performance.now(); this.raf = requestAnimationFrame(this.loop); setTimeout(() => this.mealCheck(), 2500); }
     }
     clear() { cancelAnimationFrame(this.raf); this.pets.splice(0).forEach(p => p.destroy()); }
+    /* 被捲動嚇到：多隻角色錯開 0–350ms 反應 */
+    startle() {
+      if (document.hidden) return;
+      this.pets.forEach(p => global.setTimeout(() => { if (this.pets.includes(p)) p.startle(); }, rand(0, 350)));
+    }
     /* 歡迎回來：每次隱藏超過 welcomeAfter 秒只觸發一次。
        拖曳、拋出狀態不打斷。睡著先 rouse() 迷糊醒來，再以 next 串到歡迎動作。 */
     welcomeBack() {
