@@ -198,3 +198,18 @@
 - 單獨還原：在 GitHub Revert 本次 PR；或僅還原 `seasonal-micro-scene.js` 的尺寸公式，並更新 `index.html` 的季節 JS 快取字串。**不要 Reset main**，以免刪除後續素材及功能。
 - Claude 交接：季節微景依舊是**網頁版獨立檔案**，不在共享引擎中；如明天同步 Chrome 擴充功能，評估是否要另行引入這套季節 JS。角色引擎原本全域／個別大小已反映在 `.qpet` 的 `offsetHeight`，不必增加新的 World 介面。
 
+
+
+## 2026-11-12｜季節飄升高度跟著角色尺寸縮放（網頁版，GPT-6）
+
+玩家實際將角色調成「大」後，觀察到粒子尺寸雖變大，向上飄升距離仍固定，效果只在角色肩膀附近。這次只修**飄升垂直距離**，保留前一批粒子尺寸公式及所有其他桌寵行為。
+
+- `seasonal-micro-scene.js`：沿用 `spawn(stage,type,pet)` 已有的 `petHeight = pet.offsetHeight || rect.height`，將原本固定的 `--dy`（一般 65～110px、螢火蟲 45～85px）改為每顆粒子依角色高度計算。
+  - 花瓣／楓葉／銀杏／雪花：飄升 **角色高度的 70%～120%**，最低 70px，最高 285px。角色 120px 約 84～144px、角色 240px 約 168～285px；上限讓部分粒子比頭頂高約 20～35px，其餘在肩膀至頭頂自然分布。
+  - 螢火蟲：飄升 **角色高度的 45%～110%**，最低 45px，最高 270px；依舊是較低、較柔和的光點飄動，光點尺寸不變。
+- `index.html`：季節 JS 快取 `seasonal-micro-scene.js?v=4` → `?v=5`。
+- 保留：從角色腳邊生成、飄往角色附近、偏移 X、淡出時間、粒子最多六顆、角色後方圖層（`stage.insertBefore`），SVG／字形／粒子尺寸比例和其他 UI 全部不變。
+- 新 API、localStorage、opts：**無**；Chrome ZIP 及版本號均不修改。
+- 程式語法與依最終 70～120%／45～110% 公式進行的模擬檢查通過；**尚未宣稱真實 Chrome 畫面驗收**。
+- 修改前備份：[backup/pre-seasonal-height-scale-20261112](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-height-scale-20261112)。
+- 單獨還原：Revert 本次 PR；不要 Reset main。Claude 後續同步擴充功能時，如有引入季節獨立檔，應同步本次垂直距離比例。

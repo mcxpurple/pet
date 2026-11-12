@@ -93,8 +93,12 @@
     el.style.setProperty('--duration', duration + 'ms');
     el.style.setProperty('--peak-opacity', random(.52, .83).toFixed(2));
     el.style.setProperty('--dx', random(-42, 42).toFixed(1) + 'px');
-    // 2026-11-12 微調：從腳邊向上飄至角色身體周圍，仍不從畫面頂端落下。
-    el.style.setProperty('--dy', (-random(type === 'firefly' ? 45 : 65, type === 'firefly' ? 85 : 110)).toFixed(1) + 'px');
+    // 飄升距離同樣隨角色實際高度縮放；部分落葉／花瓣會略高過頭頂，
+    // 其餘在身體到頭部間自然分布，仍從腳邊起飛，絕不從畫面頂端落下。
+    const rise = type === 'firefly'
+      ? Math.min(270, Math.max(45, petHeight * random(.45, 1.10)))
+      : Math.min(285, Math.max(70, petHeight * random(.70, 1.20)));
+    el.style.setProperty('--dy', (-rise).toFixed(1) + 'px');
     el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
     // DOM 順序與 z-index 雙重保護：粒子在角色後方，不遮住角色。
     stage.insertBefore(el, stage.firstChild);
