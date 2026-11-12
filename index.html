@@ -39,7 +39,7 @@
   #loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; z-index: 40; }
 </style>
 <!-- 網頁專用：收藏手帳造型；不影響共用 vh-ui.css 或 Chrome ZIP -->
-<link rel="stylesheet" href="notebook-ui.css?v=1">
+<link rel="stylesheet" href="notebook-ui.css?v=2">
 </head>
 <body class="vh">
 <script>
@@ -69,16 +69,13 @@
 <div id="stage"></div>
 
 <div id="picker" hidden>
-  <!-- 2026-11-12 收藏手帳 UI：只改網頁版外觀，金色活頁扣跨越整頁，沒有左側格紋膠帶。 -->
+  <!-- 2026-11-12 收藏手帳 UI：保留紫色封皮、右側書籤與分頁；移除所有玩家標 X 的裝飾。 -->
   <div class="nb-book">
     <div class="nb-edge-tabs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
     <div class="nb-bookmark" aria-hidden="true"></div>
-    <div class="nb-rings" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="sheet">
     <div class="fd-head">
-      <div class="fd-tabs"><span class="on">選擇角色</span></div>
       <div class="fd-body">
-        <div class="nb-postmark" aria-hidden="true"><span class="nb-stamp-ring"><svg width="31" height="31" viewBox="0 0 36 36"><path d="M9 28Q4 26 6 17L11 9L17 14Q21 12 25 14L30 8L31 19Q33 28 26 29Z" fill="none" stroke="#ad846f" stroke-width="2" stroke-linejoin="round"/><path d="M15 21h2m7 0h2m-6 4h2" stroke="#ad846f" stroke-width="2" stroke-linecap="round"/></svg></span><span class="nb-lines"></span></div>
         <h2>選擇桌寵</h2>
         <p>先選作品，再點照片選取，最多四隻。<br>散步時雙擊空白處叫角色過來，滑鼠在頭上來回能摸摸牠。</p>
         <div class="vsel"><select id="group" aria-label="作品"></select></div>
@@ -93,15 +90,6 @@
     </button>
     <a class="install" href="install.html">想讓角色在每個網頁上走？安裝 Chrome 版 ›</a>
     <p class="foot">© 2026 mcx_purple</p>
-    <svg class="nb-flower" viewBox="0 0 120 110" aria-hidden="true">
-<path d="M-5 105Q20 65 57 78Q76 59 96 50M30 96Q25 74 21 56" fill="none" stroke="#9d9276" stroke-width="2.4" stroke-linecap="round"/>
-<g fill="#a5a887" stroke="#829175" stroke-width=".7"><ellipse cx="27" cy="88" rx="10" ry="4" transform="rotate(-31 27 88)"/><ellipse cx="41" cy="70" rx="11" ry="4.5" transform="rotate(-58 41 70)"/><ellipse cx="67" cy="70" rx="10" ry="4" transform="rotate(27 67 70)"/><ellipse cx="18" cy="57" rx="10" ry="4.5" transform="rotate(-85 18 57)"/></g>
-<g transform="translate(42 83)" fill="#b8a2c8" stroke="#9879aa" stroke-width="1">
-<ellipse cy="-13" rx="9" ry="13"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(72)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(144)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(216)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(288)"/><circle r="6" fill="#fff5dc" stroke="#d9b788"/></g>
-<g transform="translate(80 58) scale(.68)" fill="#d6bce0" stroke="#ac93bf" stroke-width="1.2"><ellipse cy="-13" rx="9" ry="13"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(72)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(144)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(216)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(288)"/><circle r="5" fill="#fceec7"/></g>
-<g transform="translate(21 52) scale(.45)" fill="#b59ac8" stroke="#9e86ac"><ellipse cy="-13" rx="9" ry="13"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(72)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(144)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(216)"/><ellipse cy="-13" rx="9" ry="13" transform="rotate(288)"/><circle r="5" fill="#fceec7"/></g>
-</svg>
-    <svg class="nb-cat" viewBox="0 0 65 82" aria-hidden="true"><path d="M43 72C54 67 56 59 57 49C58 40 62 41 63 47C67 63 56 79 41 79H23C10 79 4 70 4 58C4 47 11 43 12 34L11 14L20 23Q31 17 41 22L51 13L50 36C59 47 55 65 43 72Z" fill="#8b708f"/><path d="M20 45Q30 51 43 45" fill="none" stroke="#6a526f" stroke-width="1.5" stroke-linecap="round"/></svg>
     </div>
   </div>
 </div>
