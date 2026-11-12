@@ -28,8 +28,7 @@
   font-family:Arial,"Segoe UI Symbol",sans-serif;
   text-shadow:0 0 2px rgba(96,89,72,.65);
 }
-.qseason-maple { font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
-.qseason-ginkgo svg { width:100%;height:100%;display:block; }
+.qseason-maple svg, .qseason-ginkgo svg { width:100%;height:100%;display:block; }
 .qseason-snow { color:#e9f2ff;text-shadow:0 0 3px rgba(87,116,144,.32); }
 .qseason-firefly {
   border-radius:50%;
