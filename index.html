@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Q版桌寵</title>
+<title>陪伴桌寵</title>
 <link rel="stylesheet" href="vh-ui.css?v=0.8">
 <!-- GPT-6 2026-11-12：僅網頁版季節微景；不影響下載版 ZIP，還原見 CHANGELOG.md -->
 <link rel="stylesheet" href="seasonal-micro-scene.css?v=6">
@@ -29,7 +29,6 @@
     border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(6px); }
   header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: .06em; }
   header h1 small { display: block; font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--muted); margin-top: 1px; }
-  header .tape { top: 50%; right: 16px; transform: translateY(-50%) rotate(4deg); }
   #stage { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
   #picker { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 72px 16px 24px;
     background: color-mix(in srgb, var(--bg) 35%, transparent); }
@@ -39,7 +38,7 @@
   #loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; z-index: 40; }
 </style>
 <!-- 網頁專用：收藏手帳造型；不影響共用 vh-ui.css 或 Chrome ZIP -->
-<link rel="stylesheet" href="notebook-ui.css?v=5">
+<link rel="stylesheet" href="notebook-ui.css?v=6">
 </head>
 <body class="vh">
 <script>
@@ -63,8 +62,8 @@
 })();
 </script>
 <header>
-  <h1>Violet Hour 紫夜星光<small>Q版桌寵</small></h1>
-  <button id="switch" class="tape" hidden>換角色</button>
+  <h1>Violet Hour 紫夜星光<small>陪伴桌寵</small></h1>
+  <button id="switch" class="pet-switch-pill" type="button" aria-label="選擇角色" hidden><span class="pet-switch-paw" aria-hidden="true">🐾</span><span>選擇角色</span></button>
 </header>
 <div id="stage"></div>
 
