@@ -21,11 +21,19 @@
 .qseason-ground {
   animation-name:qseason-ground-fade;
 }
-/* Blossoms and petals keep their original drifting path but rotate continuously.
- * Each particle receives its own start / end angles from the JS. */
-.qseason-flower-spin {
-  animation-name:qseason-flower-scatter;
-  transform-origin:50% 50%;
+/* Outer element: drifting curved path plus gentle banking. */
+.qseason-flight {
+  animation-name:qseason-curved-flight;
+}
+/* Inner PNG: its own independent rotation for the entire lifetime. */
+.qseason-art-spin {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  transform-origin:center center;
+  animation:qseason-image-spin var(--duration,4500ms) linear both;
+  will-change:transform;
 }
 .qseason-firefly {
   border-radius:50%;
@@ -40,11 +48,17 @@
   75% {opacity:calc(var(--peak-opacity,.8) * .55)}
   100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--rotation,0deg)) scale(1)}
 }
-@keyframes qseason-flower-scatter {
-  0% {opacity:0;transform:translate3d(-50%,0,0) rotate(var(--spin-start,0deg)) scale(.75)}
-  17% {opacity:var(--peak-opacity,.8)}
-  75% {opacity:calc(var(--peak-opacity,.8) * .55)}
-  100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-30px),0) rotate(var(--spin-end,120deg)) scale(1)}
+/* The position changes direction several times, rather than following one straight line. */
+@keyframes qseason-curved-flight {
+  0% {opacity:0;transform:translate3d(-50%,0,0) rotate(var(--flight-turn0,0deg)) scale(.75)}
+  25% {opacity:var(--peak-opacity,.8);transform:translate3d(calc(-50% + var(--path-x1,0px)),var(--path-y1,-40px),0) rotate(var(--flight-turn1,12deg)) scale(.85)}
+  50% {opacity:var(--peak-opacity,.8);transform:translate3d(calc(-50% + var(--path-x2,0px)),var(--path-y2,-80px),0) rotate(var(--flight-turn2,-7deg)) scale(.93)}
+  75% {opacity:calc(var(--peak-opacity,.8) * .55);transform:translate3d(calc(-50% + var(--path-x3,0px)),var(--path-y3,-120px),0) rotate(var(--flight-turn3,9deg)) scale(.98)}
+  100% {opacity:0;transform:translate3d(calc(-50% + var(--dx,0px)),var(--dy,-160px),0) rotate(var(--flight-turn4,0deg)) scale(1)}
+}
+@keyframes qseason-image-spin {
+  0% {transform:rotate(var(--self-start,0deg))}
+  100% {transform:rotate(var(--self-end,360deg))}
 }
 @keyframes qseason-ground-fade {
   0% {opacity:0;transform:translate3d(-50%,0,0) scale(.85)}

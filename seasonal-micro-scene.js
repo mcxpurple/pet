@@ -218,12 +218,27 @@
         if (!candidates.length) return;
         item = chooseWeighted(candidates);
       }
-      el = document.createElement('img');
-      el.className = 'qseason-particle qseason-sprite' + (ground ? ' qseason-ground' : '');
-      el.alt = '';
-      el.draggable = false;
+      // Two independent layers: outer container follows a curved flight path,
+      // inner PNG spins on its own axis throughout the same 4–5.5 second flight.
+      // Grounded dandelion puffs remain as a single stationary image.
+      el = document.createElement(ground ? 'img' : 'span');
+      el.className = ground
+        ? 'qseason-particle qseason-sprite qseason-ground'
+        : 'qseason-particle qseason-flight';
       el.style.pointerEvents = 'none';
-      el.src = item.file;
+      if (ground) {
+        el.alt = '';
+        el.draggable = false;
+        el.src = item.file;
+      } else {
+        const artwork = document.createElement('img');
+        artwork.className = 'qseason-sprite qseason-art-spin';
+        artwork.alt = '';
+        artwork.draggable = false;
+        artwork.style.pointerEvents = 'none';
+        artwork.src = item.file;
+        el.appendChild(artwork);
+      }
       pale = /(?:tung-flower|taiwan-lily|taiwan-azalea|lotus|snowflake|plum-|dandelion-)/.test(item.file);
       size = ground ? relativeSize(.11, .15, 19, 32)
         : item.group === 'full' ? relativeSize(.13, .17, 22, 36)
@@ -247,27 +262,54 @@
       random(pale ? .95 : .80, pale ? 1 : .95).toFixed(2));
     const isSeed = !!item && item.file.endsWith('/dandelion-seed.png');
     const drift = isSeed ? 72 : type === 'firefly' ? 65 : 42;
-    el.style.setProperty('--dx', random(-drift, drift).toFixed(1) + 'px');
+    const dx = random(-drift, drift);
+    el.style.setProperty('--dx', dx.toFixed(1) + 'px');
     const rise = type === 'firefly'
       ? Math.min(400, Math.max(75, petHeight * random(.85, 1.70)))
       : isSeed
         ? Math.min(400, Math.max(110, petHeight * random(1.20, 1.80)))
         : Math.min(285, Math.max(70, petHeight * random(.70, 1.20)));
     el.style.setProperty('--dy', (-rise).toFixed(1) + 'px');
-    // Only blossoms and loose petals rotate throughout their flight.
-    // Leaves, seed fluff, grounded dandelions and CSS fireflies keep their prior animation.
-    const isFlower = !!item && !ground &&
-      /(?:-full|-petal|-flower)\.png$/.test(item.file);
-    if (isFlower) {
-      const isPetal = item.file.endsWith('-petal.png');
+    if (item && !ground) {
+      // Layer 1: an independently curved flight path, with changing direction
+      // and gentle banking while travelling outward / upward.
+      const curveDirection = Math.random() < .5 ? -1 : 1;
+      const curve = random(10, Math.min(34, Math.max(10, width * .04)));
+      const pathPositions = [
+        dx * .24 + curveDirection * curve,
+        dx * .51 - curveDirection * curve * .55,
+        dx * .76 + curveDirection * curve * .40
+      ];
+      const pathHeights = [.25, .52, .78];
+      pathPositions.forEach((pos, index) => {
+        const step = index + 1;
+        el.style.setProperty('--path-x' + step, pos.toFixed(1) + 'px');
+        el.style.setProperty('--path-y' + step,
+          (-(rise * pathHeights[index])).toFixed(1) + 'px');
+      });
+      const bank = random(12, 30) * curveDirection;
+      const pathStart = random(-20, 20);
+      for (let step = 0; step <= 4; step++) {
+        const turn = [pathStart, pathStart + bank,
+          pathStart - bank * .6, pathStart + bank * .55,
+          pathStart + bank * .25][step];
+        el.style.setProperty('--flight-turn' + step, turn.toFixed(1) + 'deg');
+      }
+
+      // Layer 2: the PNG itself rotates independently of the flight path.
+      // Loose petals, leaf fragments, drifting seeds and fluff spin more than
+      // complete blossoms or leaves. Each gets a random direction and angle.
+      const artwork = el.firstChild;
+      const rapid = item.group === 'partial';
       const direction = Math.random() < .5 ? -1 : 1;
-      const startAngle = random(-100, 100);
-      // Petals turn more than heavier full blossoms, with random clockwise / anticlockwise motion.
-      const sweep = direction * (isPetal ? random(145, 320) : random(55, 170));
-      el.classList.add('qseason-flower-spin');
-      el.style.setProperty('--spin-start', startAngle.toFixed(1) + 'deg');
-      el.style.setProperty('--spin-end', (startAngle + sweep).toFixed(1) + 'deg');
+      const spinStart = random(-110, 110);
+      const sweep = direction * (rapid ? random(360, 900) : random(180, 420));
+      artwork.style.setProperty('--self-start', spinStart.toFixed(1) + 'deg');
+      artwork.style.setProperty('--self-end',
+        (spinStart + sweep).toFixed(1) + 'deg');
     } else {
+      // CSS fireflies retain their original untouched light-particle animation.
+      // Dandelion puffs remain grounded with no flying or spinning.
       el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
     }
     // 新 DOM 先插入。z-index 由 CSS 保證：粒子 -1，動物 0，桌寵引擎 1。

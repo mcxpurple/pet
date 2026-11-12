@@ -1,3 +1,20 @@
+## 2026-11-12｜季節粒子「飛行路徑轉向＋圖片本體獨立旋轉」（僅網頁版）
+
+玩家回饋前一版僅看起來像整顆粒子沿直線轉角，要求「圖片本身可旋轉、路徑也可旋轉」。本版明確拆成兩層獨立動畫，飛出畫面前均持續動作。
+
+- `seasonal-micro-scene.js`：對**所有會飄升的 PNG**（完整花朵、單片花瓣、楓葉、銀杏、台灣欒樹花及蒴果、芒草穗與飛絮、雪晶及碎片、小雪球、蒲公英種子）改用外層 `<span class="qseason-particle qseason-flight">` 包住內層 `<img class="qseason-sprite qseason-art-spin" alt="" draggable="false">`。兩層都不能攔截滑鼠。
+- **外層路徑**：每顆隨機左右曲線方向／曲線幅度，沿飛行過程 25%、50%、75%、100% 依序調整水平座標和傾斜角度；保留原本從腳邊出發、依角色高度飄升與整體淡入淡出。最終飛行高度與水平幅度沿用上一版。
+- **內層本體**：獨立於外層路徑，沿整段動畫隨機順時針／逆時針旋轉；花瓣、種子、碎片、飛絮等輕素材總旋轉約 360°–900°，完整花／葉／穗約 180°–420°，每顆起始角度不同。整段 4–5.5 秒持續旋轉，沒有中途停止。
+- `dandelion-puff.png` 完整蒲公英絨球**仍在腳邊靜止淡出**，不套用飛行路徑。**CSS 螢火蟲完全不變**，沿用原飛行高度、大小與光暈。動物圖既有依進場方向的 `scaleX(-1)` 左右翻轉保留，**不加入飛行或本體自轉**；正面坐姿的台灣黑熊維持原狀。
+- `seasonal-micro-scene.css`：新增 `qseason-curved-flight` 和 `qseason-image-spin`，分別在外層／內層執行；移除舊版只針對花朵的 `qseason-flower-scatter`。維持 `prefers-reduced-motion` 關閉規則。
+- `index.html`：只升級季節快取 CSS `?v=5` → `?v=6`、JS `?v=8` → `?v=9`。未更新任何 PNG。
+
+**保護範圍**：`pet-engine.js`、`pet-picker.js`、`pet-extension.zip`、`version.json`、`pets/`、動物彩蛋抽選常數（20%／60 分鐘）、互動動作及螢火蟲程式皆不修改。
+
+**備份與還原**：修改前建立 [`backup/pre-seasonal-dual-spin-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-dual-spin-20261112)，起始 main 為 `ad4eb790d7a37ec647a5e6f9660684224ce7bf0b`。使用 GitHub Revert 本次 PR 即可撤銷；勿 Reset 整個 main 以免覆寫後續更新。程式語法及模擬 DOM 測試後合併；實際瀏覽器畫面仍需測試。
+
+---
+
 ## 2026-11-12｜網頁版花朵與花瓣隨機旋轉（GPT-6）
 
 依玩家提供的第二段網頁錄影提出的要求：完整花朵與單片花瓣不只在消失時微轉角度，而是在整段飄升期間**持續緩慢旋轉**，以增加飄散感。
