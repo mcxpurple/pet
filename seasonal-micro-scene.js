@@ -254,7 +254,22 @@
         ? Math.min(400, Math.max(110, petHeight * random(1.20, 1.80)))
         : Math.min(285, Math.max(70, petHeight * random(.70, 1.20)));
     el.style.setProperty('--dy', (-rise).toFixed(1) + 'px');
-    el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
+    // Only blossoms and loose petals rotate throughout their flight.
+    // Leaves, seed fluff, grounded dandelions and CSS fireflies keep their prior animation.
+    const isFlower = !!item && !ground &&
+      /(?:-full|-petal|-flower)\.png$/.test(item.file);
+    if (isFlower) {
+      const isPetal = item.file.endsWith('-petal.png');
+      const direction = Math.random() < .5 ? -1 : 1;
+      const startAngle = random(-100, 100);
+      // Petals turn more than heavier full blossoms, with random clockwise / anticlockwise motion.
+      const sweep = direction * (isPetal ? random(145, 320) : random(55, 170));
+      el.classList.add('qseason-flower-spin');
+      el.style.setProperty('--spin-start', startAngle.toFixed(1) + 'deg');
+      el.style.setProperty('--spin-end', (startAngle + sweep).toFixed(1) + 'deg');
+    } else {
+      el.style.setProperty('--rotation', random(-28, 28).toFixed(1) + 'deg');
+    }
     // 新 DOM 先插入。z-index 由 CSS 保證：粒子 -1，動物 0，桌寵引擎 1。
     stage.insertBefore(el, stage.firstChild);
     live.add(el);

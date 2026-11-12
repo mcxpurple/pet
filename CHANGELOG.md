@@ -1,3 +1,17 @@
+## 2026-11-12｜網頁版花朵與花瓣隨機旋轉（GPT-6）
+
+依玩家提供的第二段網頁錄影提出的要求：完整花朵與單片花瓣不只在消失時微轉角度，而是在整段飄升期間**持續緩慢旋轉**，以增加飄散感。
+
+- `seasonal-micro-scene.js`：每次生成花朵／花瓣時，以素材檔名 `-full.png`、`-petal.png`、`-flower.png` 識別可旋轉主體；個別抽起始角度（-100°～100°）、順時針／逆時針方向及旋轉幅度。完整花朵約轉 **55°～170°**，單片花瓣約轉 **145°～320°**，每顆角度獨立隨機。
+- `seasonal-micro-scene.css`：僅替花朵與花瓣加 `.qseason-flower-spin` 及 `qseason-flower-scatter`，持續旋轉仍沿用原本水平飄移、升高、淡入淡出、4～5.5 秒存活及透明度；不修改花朵的 PNG。
+- 其他效果維持：楓葉／銀杏／芒草／雪花使用原本粒子動畫，蒲公英絨球仍只停在腳邊，蒲公英種子仍飛高；**螢火蟲的大小差異、光暈及飛高設定不動**。尊重 `prefers-reduced-motion`。
+- `index.html`：只將季節 CSS 快取 `?v=4` → `?v=5`、JS `?v=7` → `?v=8`。
+- **完全不動**動物彩蛋 20%／60 分鐘抽選、點擊互動和四隻動物的進退場，以及 `pet-engine.js`、`pet-picker.js`、`pet-extension.zip`、`version.json`、`pets/` 與所有素材 PNG。
+- 備份分支：[`backup/pre-seasonal-flower-rotation-20261112`](https://github.com/mcxpurple/pet/tree/backup/pre-seasonal-flower-rotation-20261112)；基準 `main` SHA `16c32a9095ffbd7d7be4340b301ebe624c9dab10`。
+- 還原：在 GitHub Revert 本次旋轉 PR，無須重設 `main`。JS 語法與邏輯模擬可驗證；Chrome 網頁實際視覺仍需開啟網站驗收。
+
+---
+
 ## 2026-11-12｜網頁版季節微景：響應式密度、淡色清晰度、蒲公英與螢火蟲增高
 
 依玩家實際錄影回饋：原本所有視窗最多六顆、每 950–1650ms 才嘗試生成、約 2.7–4.1 秒就淡出，寬螢幕顯得稀疏；淡色水彩素材因透明留白及低不透明度而不易辨識。
