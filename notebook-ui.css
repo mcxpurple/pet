@@ -14,6 +14,7 @@
   --nb-mauve:#8b607a;
   --nb-plum:#57435f;
   background:rgba(239,232,230,.32);
+  color-scheme:light; /* 系統夜間模式下，選角紙張和原生下拉仍維持奶油紙本配色 */
   padding:68px 32px 26px;
 }
 #picker .nb-book {
