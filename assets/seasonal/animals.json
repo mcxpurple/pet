@@ -2,5 +2,13 @@
   { "file": "taiwan-blue-magpie", "move": "magpie", "foot": 0.15, "name": "台灣藍鵲" },
   { "file": "taiwan-sika-deer", "move": "deer", "foot": 0.07, "name": "台灣梅花鹿" },
   { "file": "leopard-cat", "move": "cat", "foot": 0.15, "name": "石虎" },
-  { "file": "formosan-black-bear", "move": "bear", "foot": 0.045, "name": "台灣黑熊" }
+  { "file": "formosan-black-bear", "move": "bear", "foot": 0.045, "name": "台灣黑熊" },
+  { "file": "pangolin", "move": "deer", "foot": 0.24, "name": "台灣穿山甲" },
+  { "file": "mikado-pheasant", "move": "deer", "foot": 0.11, "name": "帝雉" },
+  { "file": "swinhoe-pheasant", "move": "deer", "foot": 0.01, "name": "藍腹鷴" },
+  { "file": "masked-palm-civet", "move": "cat", "foot": 0.27, "name": "白鼻心" },
+  { "file": "collared-scops-owl", "move": "bear", "foot": 0.08, "name": "領角鴞" },
+  { "file": "collared-scops-owl-fly", "move": "flutter", "foot": 0.15, "name": "領角鴞（飛行）" },
+  { "file": "taipei-tree-frog", "move": "frog", "foot": 0.22, "name": "台北樹蛙" },
+  { "file": "broad-tailed-swallowtail", "move": "flutter", "foot": 0.15, "name": "寬尾鳳蝶" }
 ]
