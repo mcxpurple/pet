@@ -119,6 +119,20 @@
   BD_fx: ["🍝", "🐻", "🥃"]
   effect_sleep: zzz
 
+- id: lior
+  name: Lior
+  group: 單人角
+  images: [idle, sleep, click, drag, walk]
+  extras: [sing, rap, dance, lyrics, earphone, choose, dessert, phone, eat, drink, sit, think, stretch, yawn, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🎤", "🎧", "🖤"]
+  walk_fx: ["🎵", "🎶"]
+  BD: "10-03"
+  BD_fx: ["🍰", "🎤", "🎧"]
+  effect_sleep: zzz
+
 - id: peisiyuan
   name: 裴思垣
   group: 那日花未落
@@ -187,4 +201,28 @@
   walk_fx: ["🎵"]
   BD: "08-30"
   BD_fx: ["🍬", "🍰", "🌙"]
+  effect_sleep: zzz
+
+- id: wenpeixi
+  name: 溫培璽
+  group: 溫差
+  images: [idle, sleep, click, drag, walk]
+  extras: [tea, cuff, tie, smoke, read, sit, eat, drink, think, wave, stretch, yawn, heart]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: ["🌹", "🍵", "🕰️"]
+  walk_fx: ["🌹"]
+  effect_sleep: zzz
+
+- id: wenjincheng
+  name: 溫謹晟
+  group: 溫差
+  images: [idle, sleep, click, drag, walk]
+  extras: [violin, gift, cocktail, work, choose, phone, read, sit, eat, drink, think, stretch, yawn, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🎻", "🎁", "☺️"]
+  walk_fx: ["🎵"]
   effect_sleep: zzz
