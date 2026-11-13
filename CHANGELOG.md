@@ -362,3 +362,4 @@
 - 新增動物：PNG 放進 assets/seasonal/animals/，在 `ANIMAL_LIST` 加一行；move 可選 magpie｜deer｜cat｜bear；改完執行 `python3 tools/port-seasonal.py` 產生擴充功能版 seasonal.js，再重新打包 ZIP
 - tools/port-seasonal.py：由網頁版自動產生擴充功能版 seasonal.js（路徑寫在檔內，執行前請依環境調整）
 - index.html 季節快取 `?v=11`；擴充功能 0.8.1、version.json 更新
+- 補充（同日）：動物清單移到 `assets/seasonal/animals.json`，網頁版與擴充功能每次開啟時讀取；讀不到時使用程式內 `ANIMAL_FALLBACK` 四隻。新增動物只要上傳 PNG＋在 animals.json 加一筆，不用改程式、不用重裝。擴充功能由 background.js 新增 `json` 訊息（僅限 mcxpurple.github.io/pet/ 網址）代為讀取

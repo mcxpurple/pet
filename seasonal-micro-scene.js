@@ -34,18 +34,27 @@
   const ANIMAL_FIRST_DELAY_MS = 3 * 60 * 1000;
   const ANIMAL_INTERVAL_MS = ANIMAL_INTERVAL_MIN * 60 * 1000;
   const animalOverride = new URLSearchParams(window.location.search).get('animal') === '1';
-  // 動物彩蛋清單：不分季節，每次出場隨機抽一隻。
-  // 新增動物：把透明 PNG 放進 assets/seasonal/animals/，在這裡加一行即可。
-  //   file：檔名（不含 .png）
+  // 動物彩蛋：不分季節，每次出場隨機抽一隻。
+  // 正式清單在 assets/seasonal/animals.json（網頁版與擴充功能每次開啟時讀取，新增動物不用重裝）。
+  // 新增動物：PNG 放進 assets/seasonal/animals/，在 animals.json 加一筆：
+  //   file：檔名（不含 .png，英數小寫與連字號）
   //   move：出場方式 magpie 跳跳再飛走｜deer 走進來低頭再走掉｜cat 悄悄靠近再衝走｜bear 坐著晃一晃
-  //   foot：圖片底部透明留白占圖高的比例，讓腳貼齊地面（不確定先填 .1）
-  const ANIMAL_LIST = [
+  //   foot：圖片底部透明留白占圖高的比例，讓腳貼齊地面（不確定先填 0.1）
+  // 下面是讀不到 animals.json 時的備用清單。
+  const ANIMAL_MOVES = ['magpie', 'deer', 'cat', 'bear'];
+  const ANIMAL_FALLBACK = [
     { file: 'taiwan-blue-magpie', move: 'magpie', foot: .15 },
     { file: 'taiwan-sika-deer', move: 'deer', foot: .07 },
     { file: 'leopard-cat', move: 'cat', foot: .15 },
     { file: 'formosan-black-bear', move: 'bear', foot: .045 }
   ];
-  const ANIMAL_INFO = Object.fromEntries(ANIMAL_LIST.map(a => [a.file, a]));
+  const fetchJSON = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  const ANIMAL_INFO = {};
+  function cleanAnimals(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(a => a && /^[a-z0-9-]+$/.test(a.file) && ANIMAL_MOVES.includes(a.move))
+      .map(a => ({ file: a.file, move: a.move, foot: Math.min(.5, Math.max(0, Number(a.foot) || .1)) }));
+  }
 
 
   // group: partial ≈ 75%，full ≈ 25%；ground 為不飄升的蒲公英絨球。
@@ -139,7 +148,12 @@
   function preloadSeasonAnimal() {
     if (animalLoadSerial) return;
     animalLoadSerial = 1;
-    ANIMAL_LIST.map(a => a.file).forEach(species => {
+    fetchJSON(ROOT + 'animals.json').then(cleanAnimals).catch(() => [])
+      .then(list => preloadAnimals(list.length ? list : ANIMAL_FALLBACK));
+  }
+  function preloadAnimals(list) {
+    list.forEach(a => { ANIMAL_INFO[a.file] = a; });
+    list.map(a => a.file).forEach(species => {
       const preload = new Image();
       preload.onload = () => {
         if (preload.naturalWidth > 0) { animalPool[species] = preload; if (!animalImage) pickAnimal(); }

@@ -28,6 +28,7 @@ rep("const ROOT = 'assets/seasonal/';","const ROOT = 'https://mcxpurple.github.i
 s=s.replace("document.getElementById('picker')","null")
 rep("const off = document.hidden ||","const off = !stage.isConnected || document.hidden ||")
 rep("return document.hidden || reducedMotion.matches ||","return !stage.isConnected || document.hidden || reducedMotion.matches ||")
+rep("const fetchJSON = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });","const fetchJSON = url => ext.json(url);")
 s=s.replace("new Image()","new ExtImage()")
 rep("""  let activeTheme = '';""","""  function ExtImage() { this.naturalWidth = 0; this.onload = null; this.onerror = null; this._src = ''; }
   Object.defineProperty(ExtImage.prototype, 'src', {

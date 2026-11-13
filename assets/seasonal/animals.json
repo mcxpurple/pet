@@ -1,0 +1,6 @@
+[
+  { "file": "taiwan-blue-magpie", "move": "magpie", "foot": 0.15, "name": "台灣藍鵲" },
+  { "file": "taiwan-sika-deer", "move": "deer", "foot": 0.07, "name": "台灣梅花鹿" },
+  { "file": "leopard-cat", "move": "cat", "foot": 0.15, "name": "石虎" },
+  { "file": "formosan-black-bear", "move": "bear", "foot": 0.045, "name": "台灣黑熊" }
+]
