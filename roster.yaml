@@ -49,6 +49,20 @@
   BD_fx: ["☕", "🍚", "🫧"]
   effect_sleep: zzz
 
+- id: lior
+  name: Lior
+  group: 星座彼氏
+  images: [idle, sleep, click, drag, walk]
+  extras: [sing, rap, dance, lyrics, earphone, choose, dessert, phone, eat, drink, sit, think, stretch, yawn, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🎤", "🎧", "🖤"]
+  walk_fx: ["🎵", "🎶"]
+  BD: "10-03"
+  BD_fx: ["🍰", "🎤", "🎧"]
+  effect_sleep: zzz
+
 - id: qixin
   name: 麒炘
   group: 玄曙錄
@@ -117,20 +131,6 @@
   walk_fx: ["🌸"]
   BD: "12-07"
   BD_fx: ["🍝", "🐻", "🥃"]
-  effect_sleep: zzz
-
-- id: lior
-  name: Lior
-  group: 單人角
-  images: [idle, sleep, click, drag, walk]
-  extras: [sing, rap, dance, lyrics, earphone, choose, dessert, phone, eat, drink, sit, think, stretch, yawn, heart]
-  size: 120
-  speed: 中
-  sleep_after: 60
-  effect_click: ["🎤", "🎧", "🖤"]
-  walk_fx: ["🎵", "🎶"]
-  BD: "10-03"
-  BD_fx: ["🍰", "🎤", "🎧"]
   effect_sleep: zzz
 
 - id: peisiyuan
@@ -213,6 +213,8 @@
   sleep_after: 60
   effect_click: ["🌹", "🍵", "🕰️"]
   walk_fx: ["🌹"]
+  BD: "12-31"
+  BD_fx: ["🍷", "🌹", "🎆"]
   effect_sleep: zzz
 
 - id: wenjincheng
@@ -225,4 +227,6 @@
   sleep_after: 60
   effect_click: ["🎻", "🎁", "☺️"]
   walk_fx: ["🎵"]
+  BD: "03-03"
+  BD_fx: ["🎻", "🍸", "🐟"]
   effect_sleep: zzz
