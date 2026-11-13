@@ -34,16 +34,18 @@
   const ANIMAL_FIRST_DELAY_MS = 3 * 60 * 1000;
   const ANIMAL_INTERVAL_MS = ANIMAL_INTERVAL_MIN * 60 * 1000;
   const animalOverride = new URLSearchParams(window.location.search).get('animal') === '1';
-  const ANIMALS = {
-    plum: 'formosan-black-bear', cherry: 'taiwan-blue-magpie',
-    tung: 'taiwan-blue-magpie', summer: 'taiwan-sika-deer',
-    firefly: 'taiwan-sika-deer', autumn: 'leopard-cat',
-    snow: 'formosan-black-bear'
-  };
-  const ANIMAL_FOOT_PADDING = {
-    'taiwan-blue-magpie': .15, 'taiwan-sika-deer': .07,
-    'leopard-cat': .15, 'formosan-black-bear': .045
-  };
+  // 動物彩蛋清單：不分季節，每次出場隨機抽一隻。
+  // 新增動物：把透明 PNG 放進 assets/seasonal/animals/，在這裡加一行即可。
+  //   file：檔名（不含 .png）
+  //   move：出場方式 magpie 跳跳再飛走｜deer 走進來低頭再走掉｜cat 悄悄靠近再衝走｜bear 坐著晃一晃
+  //   foot：圖片底部透明留白占圖高的比例，讓腳貼齊地面（不確定先填 .1）
+  const ANIMAL_LIST = [
+    { file: 'taiwan-blue-magpie', move: 'magpie', foot: .15 },
+    { file: 'taiwan-sika-deer', move: 'deer', foot: .07 },
+    { file: 'leopard-cat', move: 'cat', foot: .15 },
+    { file: 'formosan-black-bear', move: 'bear', foot: .045 }
+  ];
+  const ANIMAL_INFO = Object.fromEntries(ANIMAL_LIST.map(a => [a.file, a]));
 
 
   // group: partial ≈ 75%，full ≈ 25%；ground 為不飄升的蒲公英絨球。
@@ -132,19 +134,25 @@
   let animalLoadSerial = 0;
   let currentAnimal = null;
 
-  function preloadSeasonAnimal(theme) {
-    const species = ANIMALS[theme];
-    if (animalSpecies === species) return;
-    animalSpecies = species;
-    const serial = ++animalLoadSerial;
-    animalImage = null;
-    if (currentAnimal) removeAnimal();
-    const preload = new Image();
-    preload.onload = () => {
-      if (animalLoadSerial === serial && preload.naturalWidth > 0) animalImage = preload;
-    };
-    preload.onerror = () => { if (animalLoadSerial === serial) animalImage = null; };
-    preload.src = ROOT + 'animals/' + species + '.png';
+  // 2026-11-13：四種動物不分季節，每次出場隨機抽一隻。四張圖都很小，第一次就全部預載。
+  const animalPool = {};
+  function preloadSeasonAnimal() {
+    if (animalLoadSerial) return;
+    animalLoadSerial = 1;
+    ANIMAL_LIST.map(a => a.file).forEach(species => {
+      const preload = new Image();
+      preload.onload = () => {
+        if (preload.naturalWidth > 0) { animalPool[species] = preload; if (!animalImage) pickAnimal(); }
+      };
+      preload.src = ROOT + 'animals/' + species + '.png';
+    });
+  }
+  function pickAnimal() {
+    const list = Object.keys(animalPool);
+    if (!list.length) return false;
+    animalSpecies = choose(list);
+    animalImage = animalPool[animalSpecies];
+    return true;
   }
 
   let loaded = { full: [], partial: [], ground: [] };
@@ -326,7 +334,7 @@
 
   // 動物是獨立彩蛋，不佔 MAX_PARTICLES，圖層位於粒子與桌寵之間。
   function spawnAnimal(stage, forced) {
-    if (!animalImage || currentAnimal) return false;
+    if (currentAnimal || !pickAnimal()) return false;
     const pets = Array.from(stage.querySelectorAll('.qpet')).filter(p => {
       const r = p.getBoundingClientRect();
       return r.width > 0 && r.bottom >= window.innerHeight - BOTTOM_ZONE &&
@@ -339,9 +347,7 @@
     const petHeight = pet.offsetHeight || rect.height;
     const size = petHeight * .50;
     const species = animalSpecies;
-    const kind = species === 'taiwan-blue-magpie' ? 'magpie'
-      : species === 'taiwan-sika-deer' ? 'deer'
-      : species === 'leopard-cat' ? 'cat' : 'bear';
+    const kind = ANIMAL_INFO[species].move;
     const side = Math.random() < .5 ? 1 : -1;
     const face = side === 1 ? -1 : 1; // 三種側面動物原圖朝左，翻轉後朝右。
     const width = window.innerWidth;
@@ -358,7 +364,7 @@
     el.style.width = size + 'px';
     el.style.height = size + 'px';
     // 原圖留有透明底邊；按實際四張素材修正，讓可見的腳貼近地面。
-    el.style.bottom = (4 - size * ANIMAL_FOOT_PADDING[species]) + 'px';
+    el.style.bottom = (4 - size * ANIMAL_INFO[species].foot) + 'px';
 
     function frame(offset, x, y, facing, opacity = 1, rotate = 0, scaleY = 1) {
       return {

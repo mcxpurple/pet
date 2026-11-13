@@ -356,3 +356,9 @@
 ### 還原
 - 整批：在 GitHub 對本次提交按 Revert，或把 main 的檔案從備份分支 `backup/pre-ext-080-20261113` 取回
 - 只還原網頁票根外觀：Revert notebook-ui.css 與 index.html 的 `<i>🐾</i>` 變更
+
+## 2026-11-13｜動物彩蛋改為不分季節隨機（網頁版＋擴充功能 0.8.1，Claude）
+- seasonal-micro-scene.js：`ANIMALS`（季節對應）與 `ANIMAL_FOOT_PADDING` 合併為 `ANIMAL_LIST`，每筆 `{ file, move, foot }`；四張動物圖首次即全部預載，每次出場隨機抽一隻
+- 新增動物：PNG 放進 assets/seasonal/animals/，在 `ANIMAL_LIST` 加一行；move 可選 magpie｜deer｜cat｜bear；改完執行 `python3 tools/port-seasonal.py` 產生擴充功能版 seasonal.js，再重新打包 ZIP
+- tools/port-seasonal.py：由網頁版自動產生擴充功能版 seasonal.js（路徑寫在檔內，執行前請依環境調整）
+- index.html 季節快取 `?v=11`；擴充功能 0.8.1、version.json 更新
