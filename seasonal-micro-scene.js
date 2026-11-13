@@ -38,10 +38,11 @@
   // 正式清單在 assets/seasonal/animals.json（網頁版與擴充功能每次開啟時讀取，新增動物不用重裝）。
   // 新增動物：PNG 放進 assets/seasonal/animals/，在 animals.json 加一筆：
   //   file：檔名（不含 .png，英數小寫與連字號）
-  //   move：出場方式 magpie 跳跳再飛走｜deer 走進來低頭再走掉｜cat 悄悄靠近再衝走｜bear 坐著晃一晃
+  //   move：出場方式 magpie 跳跳再飛走｜deer 走進來低頭再走掉｜cat 悄悄靠近再衝走｜bear 坐著晃一晃（正面圖）
+  //         frog 一跳一跳進來、停下鼓身體再跳走｜flutter 波浪飄飛、拍翅、停一下再往上飛走（側面朝左的蝴蝶）
   //   foot：圖片底部透明留白占圖高的比例，讓腳貼齊地面（不確定先填 0.1）
   // 下面是讀不到 animals.json 時的備用清單。
-  const ANIMAL_MOVES = ['magpie', 'deer', 'cat', 'bear'];
+  const ANIMAL_MOVES = ['magpie', 'deer', 'cat', 'bear', 'frog', 'flutter'];
   const ANIMAL_FALLBACK = [
     { file: 'taiwan-blue-magpie', move: 'magpie', foot: .15 },
     { file: 'taiwan-sika-deer', move: 'deer', foot: .07 },
@@ -408,6 +409,36 @@
         frame(.73, stop, 0, face),
         frame(1, to, -height-size, face, 0, side*12)
       ];
+    } else if (kind === 'frog') {
+      // 三次大跳進場、停下鼓兩次身體、再兩次大跳離場。
+      duration = 8200;
+      const hop = (o, x, h) => frame(o, x, -size*h, face, 1, -side*8);
+      frames = [
+        frame(0, from, 0, face, 0),
+        hop(.06, at(.17), .38), frame(.11, at(.34), 0, face, 1, 0, .86),
+        hop(.17, at(.51), .36), frame(.22, at(.68), 0, face, 1, 0, .86),
+        hop(.28, at(.84), .34), frame(.33, stop, 0, face, 1, 0, .86),
+        frame(.37, stop, 0, face),
+        frame(.43, stop, 0, face, 1, 0, 1.08), frame(.48, stop, 0, face),
+        frame(.54, stop, 0, face, 1, 0, 1.08), frame(.60, stop, 0, face),
+        frame(.66, stop, 0, face, 1, 0, .86),
+        hop(.74, stop+(to-stop)*.30, .40), frame(.81, stop+(to-stop)*.58, 0, face, 1, 0, .86),
+        hop(.90, stop+(to-stop)*.80, .40), frame(1, to, 0, face, 0)
+      ];
+    } else if (kind === 'flutter') {
+      // 從空中波浪狀飄入，一路拍翅（上下壓扁模擬），停在角色附近空中，再往上飄走。
+      duration = 10000;
+      const flyY = -size*1.1;
+      frames = [];
+      const steps = 40;
+      for (let i = 0; i <= steps; i++) {
+        const o = i/steps;
+        let x, y;
+        if (o < .40) { const r = o/.40; x = from + (stop-from)*r; y = flyY - Math.sin(r*Math.PI*3)*size*.35 - (1-r)*size*.8; }
+        else if (o < .65) { x = stop + Math.sin((o-.40)/.25*Math.PI*2)*size*.12; y = flyY - Math.sin((o-.40)/.25*Math.PI*2)*size*.15; }
+        else { const r = (o-.65)/.35; x = stop + (to-stop)*r*.55; y = flyY - r*(height*.9) - Math.sin(r*Math.PI*2)*size*.3; }
+        frames.push(frame(o, x, y, face, i === 0 || i === steps ? 0 : 1, -side*6, i % 2 ? .55 : 1));
+      }
     } else if (kind === 'deer') {
       // 走入、低頭約兩秒、繼續走出另一側。
       duration = 9500;

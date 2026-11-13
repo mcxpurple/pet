@@ -363,3 +363,4 @@
 - tools/port-seasonal.py：由網頁版自動產生擴充功能版 seasonal.js（路徑寫在檔內，執行前請依環境調整）
 - index.html 季節快取 `?v=11`；擴充功能 0.8.1、version.json 更新
 - 補充（同日）：動物清單移到 `assets/seasonal/animals.json`，網頁版與擴充功能每次開啟時讀取；讀不到時使用程式內 `ANIMAL_FALLBACK` 四隻。新增動物只要上傳 PNG＋在 animals.json 加一筆，不用改程式、不用重裝。擴充功能由 background.js 新增 `json` 訊息（僅限 mcxpurple.github.io/pet/ 網址）代為讀取
+- 補充（同日）：新增兩種出場方式 `frog`（三跳進場、鼓身體兩次、兩跳離場）與 `flutter`（波浪飄飛、上下壓扁模擬拍翅、在角色附近空中停留、往上飄走；圖為側面朝左，依飛行方向翻轉）。animals.json 的 move 現可填 magpie｜deer｜cat｜bear｜frog｜flutter
