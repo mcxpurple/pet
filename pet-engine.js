@@ -23,6 +23,10 @@
   const ASPECT = 600 / 450;                                 // 畫布比例（高/寬）
   const GRAVITY = 2200;
   const CORE = ['idle', 'sleep', 'click', 'drag', 'walk'];
+  /* 事件專屬圖：角色有這張圖就用圖，沒有就照舊由程式做動作 */
+  const EVENTS = ['trip', 'fall', 'dizzy', 'groggy', 'startle', 'peek', 'munch', 'gawk'];
+  const POSE_IMG = { dizzy: 'dizzy', groggy: 'groggy', startle: 'startle', peek: 'peek', munch: 'munch', watch: 'gawk' };
+  const CLUMSY = { 高: { run: 3, walk: .008 } };   // 跌倒機率：小跑倍率、走路每秒機率
   const SIZE_PCT = { '小': .14, '中': .18, '大': .22 };      // 角色高度佔視窗高度比例
   const SIZE_MIN = 100, SIZE_MAX = 240, SIZE_BASE = 120;     // 高度上下限；名冊 size 以 120 為 1 倍
 
@@ -158,11 +162,14 @@
     showState(s) { this.draw(pick(this.has(s) ? this.b[s] : this.b.idle)); }
     setMode(m, dur, pose) {
       this.mode = m; this.modeT = 0; this.modeDur = dur || 0; this.pose = pose || '';
+      this.evBmp = null;
       this.goal = null; this.arrive = null; this.next = null;
       if (m !== 'follow') this.lead = null;
       if (m === 'pat') { this.v = 0; this.showState(this.has('heart') ? 'heart' : 'click'); return; }
       if (m === 'stand') { this.lookAt = !this.pose && Math.random() < .5 ? [.7, 1.4] : []; }
       if (!MOVERS.includes(m)) this.v = 0;
+      const ev = m === 'trip' || m === 'fall' ? m : m === 'stand' ? POSE_IMG[this.pose] : null;
+      if (ev && this.has(ev)) { this.v = 0; this.evBmp = pick(this.b[ev]); this.draw(this.evBmp); return; }
       const still = { stand: 'idle', look: 'idle', meet: 'idle', follow: 'idle', fall: 'drag', trip: 'idle' };
       if (m === 'walk' || m === 'run') return;          // 走路圖於 update 逐格切換
       if (['stand', 'follow', 'look'].includes(m) && this.v > 3) return;   // 煞車中延續走路圖
@@ -231,6 +238,10 @@
       this.next = Math.random() < .5
         ? () => { this.dir = Math.random() < .5 ? 1 : -1; this.setMode('run', rand(.8, 1.4)); }
         : () => { this.setMode('stand', 1.8, 'look'); this.lookAt = [.45, 1.05]; };
+    }
+    tripRate(m) {
+      const k = CLUMSY[this.c.clumsy];
+      return m === 'run' ? .025 * (k ? k.run : 1) : k ? k.walk : 0;
     }
     /* 小跑跌倒 */
     trip() {
@@ -398,7 +409,7 @@
           tilt = Math.sin(this.phase) * 2;
         }
       } else if (['stand', 'look', 'meet', 'follow'].includes(m)) {
-        this.draw(this.b.idle[0]);
+        this.draw(this.evBmp || this.b.idle[0]);
         sy = 1 + Math.sin(this.t * 2.2) * .012;
       }
 
@@ -413,7 +424,7 @@
             }
             break;
           }
-          if (m === 'run' && moving && Math.random() < .025 * dt) { this.trip(); break; }   // 小跑偶爾跌倒
+          if (moving && Math.random() < this.tripRate(m) * dt) { this.trip(); break; }   // 小跑偶爾跌倒；clumsy 角色走路也會絆倒
           if (this.modeT > this.modeDur) this.setMode('stand', rand(1.8, 4));
           break;
         case 'follow':
@@ -428,10 +439,11 @@
             const p = this.pose;
             if (p === 'stretch') sy = 1 + ramp(1.6) * .1;
             if (p === 'yawn') tilt = -4 * ramp(1.6);
-            if (p === 'groggy') { tilt = Math.sin(this.t * 2.6) * 5; sy = .985; }
-            if (p === 'dizzy') tilt = Math.sin(this.t * 6) * 8 * Math.max(.3, 1 - this.modeT / this.modeDur);
+            const img = !!this.evBmp;
+            if (p === 'groggy' && !img) { tilt = Math.sin(this.t * 2.6) * 5; sy = .985; }
+            if (p === 'dizzy' && !img) tilt = Math.sin(this.t * 6) * 8 * Math.max(.3, 1 - this.modeT / this.modeDur);
             if (p === 'startle') bob = -ramp(.3) * 9;
-            if (p === 'peek') tilt = this.dir * 9 * Math.min(this.modeT / .3, 1);
+            if (p === 'peek' && !img) tilt = this.dir * 9 * Math.min(this.modeT / .3, 1);
             if (p === 'munch') { sy = 1 - .025 * Math.abs(Math.sin(this.t * 7)); bob = -Math.abs(Math.sin(this.t * 7)) * 1.5;
               this.fxT -= dt; if (this.fxT <= 0) { this.fxT = 1.1; this.w0.fx(MEAL_FX, this.cx() + this.dir * this.w * .2, this.y + this.h * .25); } }
           }
@@ -461,7 +473,7 @@
           break;
         case 'trip': {
           const t = this.modeT, k = this.dir * 82;
-          tilt = t < .18 ? k * t / .18 : t < 1.1 ? k : k * Math.max(0, 1 - (t - 1.1) / .4);
+          if (!this.evBmp) tilt = t < .18 ? k * t / .18 : t < 1.1 ? k : k * Math.max(0, 1 - (t - 1.1) / .4);
           if (t > this.modeDur) this.setMode('stand', .9, 'groggy');
           break;
         }
@@ -787,7 +799,7 @@
     c.group = c.group || '其他';
     if (c.BD != null) c.BD = String(c.BD);
     ['BD_fx', 'walk_fx'].forEach(k => { if (c[k] != null && !Array.isArray(c[k])) c[k] = [c[k]]; });
-    c.states = [...new Set([...CORE, ...(c.images || []), ...c.extras])];
+    c.states = [...new Set([...CORE, ...(c.images || []), ...c.extras, ...EVENTS])];
     return c;
   }
   function variantNames(state, max = 5) {

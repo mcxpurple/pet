@@ -1,3 +1,14 @@
+## 2026-11-14｜事件專屬圖與 clumsy 欄位（僅網頁版）
+
+- `pet-engine.js`：生活事件改為「有專屬圖就用圖，沒有就照舊由程式做動作」。檔名：`trip` 跌倒、`fall` 被丟出去、`dizzy` 搖到暈、`groggy` 爬起迷糊、`startle` 嚇一跳、`peek` 邊邊探頭、`munch` 吃飯提醒、`gawk` 圍觀（引擎內部的 watch 姿勢改讀 gawk，避免與擴充動作 watch 撞名）。使用專屬圖時不再傾斜或搖晃 idle。
+- 名冊新增選用欄位 `clumsy: 高`：小跑跌倒機率 ×3，走路也會偶爾絆倒。
+- 事件圖不必寫進名冊，放進 `pets/{角色代號}/` 後重新產生 files.json 即可。
+- `index.html`：`pet-engine.js?v=1.0` → `?v=1.1`。
+- 未修改 Chrome ZIP 與 version.json；擴充功能另行同步。
+- 現有角色都沒有事件圖，行為與先前相同。
+
+---
+
 ## 2026-11-14｜新增角色：向羿澧、楚旭延、卓慎璁（暗湧暖域）
 
 - `pets/xiangyili/`：向羿澧 24 張（核心狀態、走路 4 格、擴充 sit／think／phone／watch／appraise／drink／eat／stretch／yawn／heart／wave，含 appraise_1、drink_1、eat_1 變體）。

@@ -9,6 +9,8 @@
 # walk_fx：散步時每 10–20 秒冒一個的 emoji 陣列
 # BD："MM-DD"，請加引號；當天散步時飄慶生 emoji，BD_fx 為角色專屬加料；"02-29" 只在閏年慶祝
 # 選角畫面依 group 分組，作品順序依本檔出現順序
+# clumsy: 高 → 小跑跌倒機率 ×3，走路也會偶爾絆倒；未填為一般
+# 事件專屬圖（選用，不必列在名冊）：trip 跌倒｜fall 被丟出去｜dizzy 搖到暈｜groggy 爬起迷糊｜startle 嚇一跳｜peek 邊邊探頭｜munch 吃飯提醒｜gawk 圍觀；沒有圖就由程式做動作
 
 - id: shiyoujing
   name: 時宥璟
