@@ -1,6 +1,6 @@
 ## 2026-11-14｜事件專屬圖與 clumsy 欄位（僅網頁版）
 
-- `pet-engine.js`：生活事件改為「有專屬圖就用圖，沒有就照舊由程式做動作」。檔名：`trip` 跌倒、`fall` 被丟出去、`dizzy` 搖到暈、`groggy` 爬起迷糊、`startle` 嚇一跳、`peek` 邊邊探頭、`munch` 吃飯提醒、`gawk` 圍觀（引擎內部的 watch 姿勢改讀 gawk，避免與擴充動作 watch 撞名）。使用專屬圖時不再傾斜或搖晃 idle。
+- `pet-engine.js`：生活事件改為「有專屬圖就用圖，沒有就照舊由程式做動作」。檔名：`trip` 跌倒、`fall` 被丟出去、`dizzy` 搖到暈、`groggy` 爬起迷糊、`startle` 嚇一跳、`peek` 邊邊探頭、`munch` 吃飯提醒、`gawk` 圍觀（玩家拖起任何一隻角色時，其他角色轉頭看、走過去圍觀）。使用專屬圖時不再傾斜或搖晃 idle。
 - 名冊新增選用欄位 `clumsy: 高`：小跑跌倒機率 ×3，走路也會偶爾絆倒。
 - 事件圖不必寫進名冊，放進 `pets/{角色代號}/` 後重新產生 files.json 即可。
 - `index.html`：`pet-engine.js?v=1.0` → `?v=1.1`。

@@ -25,7 +25,7 @@
   const CORE = ['idle', 'sleep', 'click', 'drag', 'walk'];
   /* 事件專屬圖：角色有這張圖就用圖，沒有就照舊由程式做動作 */
   const EVENTS = ['trip', 'fall', 'dizzy', 'groggy', 'startle', 'peek', 'munch', 'gawk'];
-  const POSE_IMG = { dizzy: 'dizzy', groggy: 'groggy', startle: 'startle', peek: 'peek', munch: 'munch', watch: 'gawk' };
+  const POSE_IMG = { dizzy: 'dizzy', groggy: 'groggy', startle: 'startle', peek: 'peek', munch: 'munch' };
   const CLUMSY = { 高: { run: 3, walk: .008 } };   // 跌倒機率：小跑倍率、走路每秒機率
   const SIZE_PCT = { '小': .14, '中': .18, '大': .22 };      // 角色高度佔視窗高度比例
   const SIZE_MIN = 100, SIZE_MAX = 240, SIZE_BASE = 120;     // 高度上下限；名冊 size 以 120 為 1 倍
@@ -168,7 +168,7 @@
       if (m === 'pat') { this.v = 0; this.showState(this.has('heart') ? 'heart' : 'click'); return; }
       if (m === 'stand') { this.lookAt = !this.pose && Math.random() < .5 ? [.7, 1.4] : []; }
       if (!MOVERS.includes(m)) this.v = 0;
-      const ev = m === 'trip' || m === 'fall' ? m : m === 'stand' ? POSE_IMG[this.pose] : null;
+      const ev = m === 'trip' || m === 'fall' ? m : m === 'look' ? 'gawk' : m === 'stand' ? POSE_IMG[this.pose] : null;
       if (ev && this.has(ev)) { this.v = 0; this.evBmp = pick(this.b[ev]); this.draw(this.evBmp); return; }
       const still = { stand: 'idle', look: 'idle', meet: 'idle', follow: 'idle', fall: 'drag', trip: 'idle' };
       if (m === 'walk' || m === 'run') return;          // 走路圖於 update 逐格切換
