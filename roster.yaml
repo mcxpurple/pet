@@ -274,3 +274,32 @@
   BD: "03-03"
   BD_fx: ["🎻", "🍸", "🐟"]
   effect_sleep: zzz
+
+- id: hanyurun
+  name: 韓禹潤
+  group: QUADRA
+  images: [idle, sleep, click, drag, walk]
+  extras: [hairband, drink, unwrap, bandage, eat, whistle, bitter, puppy, dance, heart, wave]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  clumsy: 高
+  effect_click: ["🩹", "☀️", "🧋"]
+  walk_fx: ["☀️"]
+  BD: "07-15"
+  BD_fx: ["🧋", "🍟", "🎂"]
+  effect_sleep: zzz
+
+- id: shenzaiyu
+  name: 申宰譽
+  group: QUADRA
+  images: [idle, sleep, click, drag, walk]
+  extras: [phone, wipe, draw, spice, drink, tidy, sit, rap, think, heart]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🐩", "🌶️", "🎹"]
+  walk_fx: ["🎹"]
+  BD: "01-12"
+  BD_fx: ["🌶️", "🥤", "🎂"]
+  effect_sleep: zzz
