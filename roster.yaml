@@ -175,6 +175,48 @@
   BD_fx: ["🍤", "🍇", "🍸"]
   effect_sleep: zzz
 
+- id: xiangyili
+  name: 向羿澧
+  group: 暗湧暖域
+  images: [idle, sleep, click, drag, walk]
+  extras: [sit, think, phone, watch, appraise, drink, eat, stretch, yawn, heart, wave]
+  size: 120
+  speed: 中
+  sleep_after: 60
+  effect_click: ["🧳", "✈️", "🥂"]
+  walk_fx: ["✈️"]
+  BD: "12-11"
+  BD_fx: ["🍓", "🍑", "🥂"]
+  effect_sleep: zzz
+
+- id: chuxuyan
+  name: 楚旭延
+  group: 暗湧暖域
+  images: [idle, sleep, click, drag, walk]
+  extras: [camera, sunflower, award, read, drink, eat, feed, sit, disguise, think, phone, stretch, yawn, heart, wave]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: ["🌻", "📷", "🎬"]
+  walk_fx: ["🌻"]
+  BD: "11-04"
+  BD_fx: ["🌻", "🍡", "☕"]
+  effect_sleep: zzz
+
+- id: zhuoshencong
+  name: 卓慎璁
+  group: 暗湧暖域
+  images: [idle, sleep, click, drag, walk]
+  extras: [sit, think, read, drink, eat, collect, note, secret, tipsy, phone, stretch, yawn, heart, wave]
+  size: 120
+  speed: 慢
+  sleep_after: 60
+  effect_click: ["☕", "📖", "🤫"]
+  walk_fx: ["📖"]
+  BD: "09-16"
+  BD_fx: ["🌶️", "🍣", "☕"]
+  effect_sleep: zzz
+
 - id: rex
   name: Rex
   group: LUMNYX

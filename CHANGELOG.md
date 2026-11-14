@@ -1,3 +1,14 @@
+## 2026-11-14｜新增角色：向羿澧、楚旭延、卓慎璁（暗湧暖域）
+
+- `pets/xiangyili/`：向羿澧 24 張（核心狀態、走路 4 格、擴充 sit／think／phone／watch／appraise／drink／eat／stretch／yawn／heart／wave，含 appraise_1、drink_1、eat_1 變體）。
+- `pets/chuxuyan/`：楚旭延 25 張（擴充 camera／sunflower／award／read／drink／eat／feed／sit／disguise／think／phone／stretch／yawn／heart／wave）。
+- `pets/zhuoshencong/`：卓慎璁 26 張（擴充 sit／think／read／drink／eat／collect／note／secret／tipsy／phone／stretch／yawn／heart／wave，含 sit_1、eat_1 變體）。
+- `roster.yaml`：三人加入「暗湧暖域」分組，排在佟淮蘅之後；附生日與點擊 emoji。
+- `files.json`：重新產生。
+- 未修改引擎、介面、Chrome ZIP 與版本號；擴充功能讀取線上名冊與圖片，玩家不需重裝。
+
+---
+
 ## 2026-11-12｜頁首「選擇角色」灰紫膠囊與「陪伴桌寵」標題（僅網頁）
 
 依玩家從實際 CSS 原型選定的款式，將網頁散步模式頂部原本的「換角色」紙膠帶按鈕，換成灰紫色圓角膠囊「🐾 選擇角色」，維持原本點擊後開啟選角畫面的功能。這是**真實 CSS 樣式，不是以示意圖或背景圖片代替互動按鈕**。
